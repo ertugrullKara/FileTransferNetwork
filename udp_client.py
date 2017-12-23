@@ -65,7 +65,7 @@ class RDT_UDPClient:
             time.sleep(1)
 
     def _check_incoming_ack(self):
-        self.ack_came = int(self.response.split(':')[0]["ack"])
+        self.ack_came = int(self.response.split(':')[0])
         print "Incoming packet:"
         print self.response
         print "End\n"
