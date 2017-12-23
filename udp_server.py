@@ -86,7 +86,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Extract request
         self._data = json.loads(self.request[0].strip())
         self._headers = self._data["header"]
-        self._message = self._data["payload"]
+        self._message = json.dumps(self._data["payload"])
+
 
         # TODO: Checksum?
 

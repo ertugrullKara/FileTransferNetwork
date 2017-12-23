@@ -1,7 +1,5 @@
 import json
 import socket
-import sys
-from timeit import default_timer as timer
 
 
 def utf8len(s):
@@ -29,8 +27,11 @@ class RDT_UDPClient:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(0.5)
 
-    def _initial_packet(self):
+    def _open_file(self):
         self.file = open(self.file_to_send, 'r')
+        self.file_size = utf8len(self.file.read())
+
+    def _initial_packet(self):
         self._headers["file_name"] = self.file_to_send
         self._headers["size_bytes"] = utf8len(self.file.read())
         self.seq_to_send += 1
@@ -47,21 +48,23 @@ class RDT_UDPClient:
             self._initial_packet()
         else:
             self._middle_packets()
-        self.message = {"headers": self._headers, "payload": self._data}
+        self.message = {"header": self._headers, "payload": self._data}
 
     def send_file(self, file_name="5mb.txt"):
         self.file_to_send = file_name
-        self._prepare_packet()
-        try:
-            # Send message
-            self.sock.sendto(json.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
-            self.response = json.loads(self.sock.recv(1024))
-            self._check_incoming_ack()
-        except: # Timeout
-            pass
+        while self.ack_came < self.file_size:
+            self._prepare_packet()
+            try:
+                # Send message
+                self.sock.sendto(json.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
+                self.response = json.loads(self.sock.recv(1024))
+                self._check_incoming_ack()
+            except: # Timeout
+                pass
+            self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip)   # Alternate between ip's. [Multi-homing]
 
     def _check_incoming_ack(self):
-        incoming_ack = self.response["headers"]["ack"]
+        incoming_ack = self.response["header"]["ack"]
         self.ack_came = incoming_ack
         if incoming_ack  == self.seq_to_send:
             pass #Basarili
