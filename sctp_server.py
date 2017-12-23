@@ -4,7 +4,7 @@ import sctp
 
 class SCTPHandler:
     def __init__(self, filename):
-        self.port = "8765"
+        self.port = 8765
         self.filename = filename
         self.file = open(self.filename, 'wb')
 
