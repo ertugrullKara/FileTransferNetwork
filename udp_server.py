@@ -25,11 +25,13 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         file = open(self.file_name, 'wb')
 
     def _finish(self):
-        global file, allow_initial
+        global last_succ_byte, waiting_for_byte, file, allow_initial
         if last_succ_byte != self.file_size:
             return False
         file.close()
         allow_initial = True
+        last_succ_byte = 0
+        waiting_for_byte = 0
         return True
 
     def __received_bytes__(self, bytes):
