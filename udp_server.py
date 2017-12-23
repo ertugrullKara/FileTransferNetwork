@@ -16,7 +16,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file_size = 0
     file = None
     buffer = []
-    package_coming = []
 
     def _init(self):
         global file
@@ -32,6 +31,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         allow_initial = True
         last_succ_byte = 0
         waiting_for_byte = 0
+        self.file_name = "default.txt"
+        self.file_size = 0
+        self.file = None
+        self.buffer = []
         return True
 
     def __received_bytes__(self, bytes):
