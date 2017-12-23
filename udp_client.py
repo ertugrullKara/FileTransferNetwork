@@ -9,7 +9,7 @@ def utf8len(s):
 
 
 class RDT_UDPClient:
-    dest_ip = ["10.10.4.1", "10.10.3.2"]
+    dest_ip = ["10.10.2.2", "10.10.4.2"]
     dest_ip_index = 0
     dest_port = 8765
     file_to_send = "5mb.txt"
