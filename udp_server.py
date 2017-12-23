@@ -13,7 +13,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file_size = 0
     file = None
     last_succ_byte = 0
-    waiting_for_byte = last_succ_byte + 1
+    waiting_for_byte = 0
     buffer = []
     package_coming = []
 
