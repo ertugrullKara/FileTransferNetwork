@@ -25,6 +25,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _finish(self):
         global last_succ_byte, waiting_for_byte, file, allow_initial
+        print last_succ_byte, self.file_size
         if last_succ_byte != self.file_size:
             return False
         file.close()
