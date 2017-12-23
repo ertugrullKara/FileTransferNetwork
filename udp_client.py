@@ -79,11 +79,11 @@ class RDT_UDPClient:
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
-                msg = queue.get(1)
-                if msg != "END":
-                    self._check_incoming_ack(msg)
-                else:
+                msg = queue.get(timeout=1)
+                if msg == "END":
                     break
+                else:
+                    self._check_incoming_ack(msg)
 
     def _check_incoming_ack(self, incoming_ack):
         self.ack_came = incoming_ack
