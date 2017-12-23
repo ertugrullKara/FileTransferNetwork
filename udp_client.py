@@ -48,6 +48,7 @@ class RDT_UDPClient:
         if self.seq_to_send <= 0:
             self._initial_packet()
         else:
+            self._headers = {}
             self._middle_packets()
         self._headers["seq"] = self.seq_to_send
         self.message = {"header": self._headers, "payload": self._data}

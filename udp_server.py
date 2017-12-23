@@ -37,6 +37,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         msg_bytes = utf8len(self._message)
         print "Check ACK"
         print coming_seq_number, self.waiting_for_byte
+        print "Packet end.\n"
+
         if coming_seq_number == 0:
             # Initial packet has arrived.
             # Get properties.
@@ -91,7 +93,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._message = json.dumps(self._data["payload"])
         print self._headers
         print self._message
-        print "Packet end.\n"
 
 
         # TODO: Checksum?
