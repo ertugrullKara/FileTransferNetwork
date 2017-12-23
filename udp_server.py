@@ -7,13 +7,13 @@ import json
 def utf8len(s):
     return len(s.encode('utf-8'))
 
+last_succ_byte = 0
+waiting_for_byte = 0
 
 class RDT_UDPHandler(SS.BaseRequestHandler):
     file_name = "default.txt"
     file_size = 0
     file = None
-    last_succ_byte = 0
-    waiting_for_byte = 0
     buffer = []
     package_coming = []
 
@@ -23,20 +23,22 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.file = open(self.file_name, 'wb')
 
     def _finish(self):
-        if self.last_succ_byte != self.file_size:
+        if last_succ_byte != self.file_size:
             return False
         self.file.close()
         return True
 
     def __received_bytes__(self, bytes):
-        self.last_succ_byte += bytes
-        self.waiting_for_byte = self.last_succ_byte
+        global last_succ_byte, waiting_for_byte
+        last_succ_byte += bytes
+        waiting_for_byte = last_succ_byte
 
     def __check_send_ACK__(self):
+        global last_succ_byte, waiting_for_byte
         coming_seq_number = int(self._headers["seq"])
         msg_bytes = utf8len(self._message)
         print "Check ACK"
-        print coming_seq_number, self.waiting_for_byte
+        print coming_seq_number, waiting_for_byte
         print "Packet end.\n"
 
         if coming_seq_number == 0:
@@ -44,7 +46,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Get properties.
             self._init()
             self.__received_bytes__(1)
-        elif coming_seq_number == self.waiting_for_byte:
+        elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
@@ -58,12 +60,12 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             self.buffer = []
         elif coming_seq_number + msg_bytes == self.file_size:
             self._finish()  # Finished.
-            self.waiting_for_byte = -1
-        elif coming_seq_number + 1 > self.waiting_for_byte:
+            waiting_for_byte = -1
+        elif coming_seq_number + 1 > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
             self.buffer.append((coming_seq_number, self._message))
-        elif coming_seq_number + 1 < self.waiting_for_byte:
+        elif coming_seq_number + 1 < waiting_for_byte:
             # Already arrived packet came again.
             # Just send the same ACK.
             pass
@@ -74,7 +76,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             raise NotImplementedError
 
         # Send new ACK.
-        self._send(self.waiting_for_byte)
+        self._send(waiting_for_byte)
 
     def _send(self, seq):
         socket = self.request[1]
@@ -98,7 +100,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.__check_send_ACK__()
 
 
-class ForkingUDPServer(SS.ForkingMixIn, SS.UDPServer):
+class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
     pass
 
 
@@ -107,7 +109,7 @@ if __name__ == "__main__":
     HOST, PORT = "", USED_PORT
 
     # Open threaded-server for link.
-    server = ForkingUDPServer((HOST, PORT), RDT_UDPHandler)
+    server = ThreadingUDPServer((HOST, PORT), RDT_UDPHandler)
     ip, port = server.server_address
 
     # Start a thread with the server -- that thread will then start one
