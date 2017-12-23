@@ -1,7 +1,7 @@
 import SocketServer as SS
 import threading
 import time
-import pickle
+import json
 
 
 def utf8len(s):
@@ -20,8 +20,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _init(self):
         global file
-        self.file_name = self._headers["file_name"]
-        self.file_size = int(self._headers["size_bytes"])
+        self.file_name = self._headers[0]
+        self.file_size = int(self._headers[1])
         file = open(self.file_name, 'wb')
 
     def _finish(self):
@@ -38,7 +38,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __check_send_ACK__(self):
         global last_succ_byte, waiting_for_byte, file
-        coming_seq_number = int(self._headers["seq"])
+        coming_seq_number = int(self._headers[-1])
         msg_bytes = utf8len(self._message)
         print "Check ACK"
         print coming_seq_number, waiting_for_byte
@@ -83,19 +83,16 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _send(self, seq):
         socket = self.request[1]
-        response = {"header":
-                        {"ack": str(seq)},
-                    "payload": ""
-                    }
-        socket.sendto(pickle.dumps(response), self.client_address)
+        response = str(seq) + ':'
+        socket.sendto(json.dumps(response), self.client_address)
 
     def handle(self):
         # Function to run when new UDP request came to the server.
 
         # Extract request
-        self._data = pickle.loads(self.request[0].strip())
-        self._headers = self._data["header"]
-        self._message = pickle.dumps(self._data["payload"])
+        self._data = self.request[0].strip()
+        self._headers = self._data.split(':')[0].split('_')
+        self._message = self._data.split(':')[1]
         print self._data
 
         # TODO: Checksum?

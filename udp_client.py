@@ -19,8 +19,8 @@ class RDT_UDPClient:
 
     def __init__(self, max_packet_size):
         self._max_packet_size = max_packet_size + 1
-        self._headers = {}
-        self._data = {}
+        self._headers = "_"
+        self._data = ":"
         self.seq_to_send = 0
         self.ack_came = 0
         self.file = None
@@ -34,25 +34,18 @@ class RDT_UDPClient:
         self.file_size = utf8len(self.file_content)
 
     def _initial_packet(self):
-        sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
-        self._data = self.file_content[self.seq_to_send:self.seq_to_send+sending_size]
-        self._headers["file_name"] = self.file_to_send
-        self._headers["size_bytes"] = self.file_size
-
-    def _middle_packets(self):
-        sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
-        data = self.file_content[self.seq_to_send:self.seq_to_send+sending_size]
-        self._headers["seq"] = self.seq_to_send
-        self._data = data
+        self._headers += self.file_to_send + '_'
+        self._headers += str(self.file_size) + '_'
 
     def _prepare_packet(self):
         if self.seq_to_send <= 0:
             self._initial_packet()
         else:
-            self._headers = {}
-            self._middle_packets()
-        self._headers["seq"] = self.seq_to_send
-        self.message = {"header": self._headers, "payload": self._data}
+            self._headers = "_"
+        sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
+        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
+        self._headers += str(self.seq_to_send) + '_'
+        self.message = self._headers + ':' + self._data
 
     def send_file(self, file_name="5mb.txt"):
         self.file_to_send = file_name
@@ -61,8 +54,8 @@ class RDT_UDPClient:
             self._prepare_packet()
             try:
                 # Send message
-                self.sock.sendto(pickle.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
-                self.response = pickle.loads(self.sock.recv(1024))
+                self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
+                self.response = self.sock.recv(1024)
                 print "Sent:"
                 print self.message
                 self._check_incoming_ack()
@@ -72,11 +65,10 @@ class RDT_UDPClient:
             time.sleep(1)
 
     def _check_incoming_ack(self):
-        incoming_ack = self.response["header"]["ack"]
+        self.ack_came = int(self.response.split(':')[0]["ack"])
         print "Incoming packet:"
         print self.response
         print "End\n"
-        self.ack_came = int(incoming_ack)
         if self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:
