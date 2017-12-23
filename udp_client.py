@@ -48,7 +48,6 @@ class RDT_UDPClient:
         self.message = self._headers + ':' + self._data
 
     def _send_packet(self, queue, last):
-        self._prepare_packet()
         try:
             # Send message
             print "Sending:",
@@ -69,6 +68,7 @@ class RDT_UDPClient:
         windowsize = 2
         while self.ack_came < self.file_size:
             for i in range(windowsize):
+                self._prepare_packet()
                 send_packet = Process(target=self._send_packet, args=(queue, i==windowsize-1))
                 send_packet.daemon = True
                 send_packet.start()
