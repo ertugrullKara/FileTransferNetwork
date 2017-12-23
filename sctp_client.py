@@ -23,6 +23,7 @@ class SCTPHandler:
         read_bytes = 0
         while 1:
             next_pack = min(self.buffer_size, self.file_size - read_bytes)
+            sock.connect(self.dest_ip_port_tuples[0])
             sock.send(self.file_content[read_bytes:read_bytes + next_pack])
             read_bytes += next_pack
 
