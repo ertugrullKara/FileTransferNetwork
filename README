@@ -1,0 +1,5 @@
+installing pysctp:
+----
+cd pysctp
+make installdeps
+python setup.py install
