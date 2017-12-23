@@ -43,7 +43,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Initial packet has arrived.
             # Get properties.
             self._init()
-            self.__received_bytes__(1)
+            # self.__received_bytes__(1)
         elif coming_seq_number == self.waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
@@ -91,9 +91,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._data = json.loads(self.request[0].strip())
         self._headers = self._data["header"]
         self._message = json.dumps(self._data["payload"])
-        print self._headers
-        print self._message
-
+        print self._data
 
         # TODO: Checksum?
 
