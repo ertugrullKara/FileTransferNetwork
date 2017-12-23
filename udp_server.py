@@ -44,7 +44,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Get properties.
             self._init()
             self.__received_bytes__(1)
-        elif coming_seq_number + 1 == self.waiting_for_byte:
+        elif coming_seq_number == self.waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
