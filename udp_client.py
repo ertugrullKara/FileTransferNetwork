@@ -34,7 +34,7 @@ class RDT_UDPClient:
         self.file_size = utf8len(self.file_content)
 
     def _initial_packet(self):
-        self._headers += self.file_to_send + '_'
+        self._headers = self.file_to_send + '_'
         self._headers += str(self.file_size) + '_'
 
     def _prepare_packet(self):
@@ -54,10 +54,10 @@ class RDT_UDPClient:
             self._prepare_packet()
             try:
                 # Send message
+                print "Sending:"
+                print self.message
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 self.response = self.sock.recv(1024)
-                print "Sent:"
-                print self.message
                 self._check_incoming_ack()
             except: # Timeout
                 pass
