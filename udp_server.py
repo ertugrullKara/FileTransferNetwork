@@ -1,7 +1,6 @@
 import SocketServer as SS
 import threading
 import time
-import json
 
 
 def utf8len(s):
@@ -84,7 +83,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def _send(self, seq):
         socket = self.request[1]
         response = str(seq) + ':'
-        socket.sendto(json.dumps(response), self.client_address)
+        socket.sendto(response, self.client_address)
 
     def handle(self):
         # Function to run when new UDP request came to the server.
