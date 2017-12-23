@@ -10,6 +10,7 @@ last_succ_byte = 0
 waiting_for_byte = 0
 file = None
 allow_initial = True
+buffer = []
 _lock = threading.Lock()
 
 
@@ -17,7 +18,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file_name = "default.txt"
     file_size = 0
     file = None
-    buffer = []
 
     def _init(self):
         global file
@@ -32,7 +32,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             waiting_for_byte = last_succ_byte
 
     def __check_send_ACK__(self):
-        global file, allow_initial
+        global file, allow_initial, buffer
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
@@ -54,21 +54,24 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             with _lock:
                 file.write(self._message)
             # Write buffered messages to file.
-            self.buffer.sort(key=lambda tup: tup[0])
-            for buffered_item in self.buffer:
-                with _lock:
+            with _lock:
+                buffer.sort(key=lambda tup: tup[0])
+                for buffered_item in buffer:
                     file.write(buffered_item[1])
-                msg_bytes = utf8len(buffered_item[1])
-                self.__received_bytes__(msg_bytes)
-            self.buffer = []
-        elif coming_seq_number + 1 > waiting_for_byte:
+                    msg_bytes = utf8len(buffered_item[1])
+                    self.__received_bytes__(msg_bytes)
+                buffer = []
+        elif coming_seq_number > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
-            self.buffer.append((coming_seq_number, self._message))
-        elif coming_seq_number + 1 < waiting_for_byte:
+            with _lock:
+                buffer.append((coming_seq_number, self._message))
+        elif coming_seq_number < waiting_for_byte:
             # Already arrived packet came again.
             # Just send the same ACK.
             pass
+        elif waiting_for_byte == self.file_size:
+            exit(1)
         else:
             print self._data
             print "ERROR!"
