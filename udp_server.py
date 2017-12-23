@@ -44,11 +44,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         print coming_seq_number, waiting_for_byte
         print "Packet end.\n"
 
-        if coming_seq_number == 0:
+        if coming_seq_number == -1:
             # Initial packet has arrived.
             # Get properties.
             self._init()
-            self.__received_bytes__(1)
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
