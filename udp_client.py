@@ -1,4 +1,4 @@
-import pickle as json
+import pickle
 import socket
 import time
 
@@ -61,8 +61,8 @@ class RDT_UDPClient:
             self._prepare_packet()
             try:
                 # Send message
-                self.sock.sendto(json.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
-                self.response = json.loads(self.sock.recv(1024))
+                self.sock.sendto(pickle.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
+                self.response = pickle.loads(self.sock.recv(1024))
                 print "Sent:"
                 print self.message
                 self._check_incoming_ack()

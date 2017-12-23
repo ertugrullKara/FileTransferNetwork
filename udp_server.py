@@ -1,7 +1,7 @@
 import SocketServer as SS
 import threading
 import time
-import pickle as json
+import pickle
 
 
 def utf8len(s):
@@ -39,7 +39,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def __check_send_ACK__(self):
         global last_succ_byte, waiting_for_byte, file
         coming_seq_number = int(self._headers["seq"])
-        msg_bytes = utf8len(self._message.encode("utf-16be"))
+        msg_bytes = utf8len(self._message)
         print "Check ACK"
         print coming_seq_number, waiting_for_byte
         print "Packet end.\n"
@@ -48,17 +48,17 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Initial packet has arrived.
             # Get properties.
             self._init()
-            file.write(self._message.encode("utf-16be"))
+            file.write(self._message)
             self.__received_bytes__(msg_bytes)
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
-            file.write(self._message.encode("utf-16be"))
+            file.write(self._message)
             # Write buffered messages to file.
             self.buffer.sort(key=lambda tup: tup[0])
             for buffered_item in self.buffer:
-                file.write(buffered_item[1].encode("utf-16be"))
+                file.write(buffered_item[1])
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
@@ -87,15 +87,15 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                         {"ack": str(seq)},
                     "payload": ""
                     }
-        socket.sendto(json.dumps(response), self.client_address)
+        socket.sendto(pickle.dumps(response), self.client_address)
 
     def handle(self):
         # Function to run when new UDP request came to the server.
 
         # Extract request
-        self._data = json.loads(self.request[0].strip())
+        self._data = pickle.loads(self.request[0].strip())
         self._headers = self._data["header"]
-        self._message = json.dumps(self._data["payload"])
+        self._message = pickle.dumps(self._data["payload"])
         print self._data
 
         # TODO: Checksum?
