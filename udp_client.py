@@ -42,7 +42,7 @@ class RDT_UDPClient:
         else:
             self._headers = "_"
         sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
-        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size].replace('\n', '\\n')
+        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
 
@@ -53,8 +53,8 @@ class RDT_UDPClient:
             self._prepare_packet()
             try:
                 # Send message
-                print "Sending:"
-                print self.message
+                print "Sending:",
+                print self.seq_to_send
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 self.response = self.sock.recv(1024)
                 self._check_incoming_ack()
@@ -65,9 +65,8 @@ class RDT_UDPClient:
 
     def _check_incoming_ack(self):
         self.ack_came = int(self.response.split(':')[0])
-        print "Incoming packet:"
-        print self.response
-        print "End\n"
+        print "Incoming ACK:",
+        print self.ack_came
         if self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:

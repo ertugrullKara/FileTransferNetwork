@@ -38,10 +38,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def __check_send_ACK__(self):
         global last_succ_byte, waiting_for_byte, file
         coming_seq_number = int(self._headers[-1])
+        print "Coming seq:",
+        print coming_seq_number
         msg_bytes = utf8len(self._message)
-        print "Check ACK"
-        print coming_seq_number, waiting_for_byte
-        print "Packet end.\n"
 
         if coming_seq_number == 0:
             # Initial packet has arrived.
@@ -78,6 +77,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             raise NotImplementedError
 
         # Send new ACK.
+        print "Sending ACK:",
+        print waiting_for_byte
         self._send(waiting_for_byte)
 
     def _send(self, seq):
@@ -92,7 +93,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._data = self.request[0].strip()
         self._headers = self._data.split(':')[0].split('_')
         self._message = self._data.split(':')[1]
-        print self._data
 
         # TODO: Checksum?
 
