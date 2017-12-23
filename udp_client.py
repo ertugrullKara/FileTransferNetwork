@@ -50,6 +50,7 @@ class RDT_UDPClient:
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
             # Send message
+            print "Last:", last
             print "Sending:",
             print seq_to_send
             message += ':' + str(hash(message))  # Checksum
@@ -60,6 +61,7 @@ class RDT_UDPClient:
         except:  # Timeout
             pass
         if last:
+            print "Putting end"
             queue.put("END")
 
     def send_file(self, file_name="5mb.txt"):
@@ -73,7 +75,7 @@ class RDT_UDPClient:
                 send_packet = Process(target=self._send_packet, args=(queue, self.seq_to_send,
                                                                       self.message, self.sock,
                                                                       self.dest_ip[self.dest_ip_index],
-                                                                      self.dest_port, i==windowsize-1))
+                                                                      self.dest_port, i==(windowsize-1)))
                 send_packet.daemon = True
                 send_packet.start()
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
