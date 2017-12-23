@@ -6,18 +6,17 @@ class SCTPHandler:
     def __init__(self):
         self.dest_ip_port_tuples = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
         self.filename = None
+        self.sock = sctp.sctpsocket_tcp(socket.AF_INET)
+        self.sock.bindx(self.dest_ip_port_tuples)
+        self.sock.listen(10)
 
     def serve_forever(self):
         while 1:
             self.serve()
 
     def serve(self):
-        sock = sctp.sctpsocket_tcp(socket.AF_INET)
-        sock.bindx(self.dest_ip_port_tuples)
-        sock.listen(10)
-
-        connection, address = sock.accept()
-        initial = connection.recv(1024)
+        connection, address = self.sock.accept()
+        initial = connection.recv(1000)
         incoming = initial.split(':')
         self.total_size = int(incoming[2])
         self.buffer_size = int(incoming[1])
