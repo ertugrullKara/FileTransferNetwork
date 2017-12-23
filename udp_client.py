@@ -71,7 +71,7 @@ class RDT_UDPClient:
         print "Incoming packet:"
         print self.response
         print "End\n"
-        self.ack_came = incoming_ack
+        self.ack_came = int(incoming_ack)
         if incoming_ack  == self.seq_to_send:
             pass #Basarili
         else:

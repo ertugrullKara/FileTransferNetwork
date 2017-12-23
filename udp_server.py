@@ -19,7 +19,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _init(self):
         self.file_name = self._headers["file_name"]
-        self.file_size = self._headers["size_bytes"]
+        self.file_size = int(self._headers["size_bytes"])
         self.file = open(self.file_name, 'wb')
 
     def _finish(self):
@@ -33,7 +33,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.waiting_for_byte = self.last_succ_byte + 1
 
     def __check_send_ACK__(self):
-        coming_seq_number = self._headers["seq"]
+        coming_seq_number = int(self._headers["seq"])
         msg_bytes = utf8len(self._message)
         if coming_seq_number == 0:
             # Initial packet has arrived.
