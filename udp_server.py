@@ -90,7 +90,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Function to run when new UDP request came to the server.
 
         # Extract request
-        self._data = self.request[0].strip()
+        self._data = self.request[0]
         self._headers = self._data.split(':')[0].split('_')
         self._message = self._data.split(':')[1]
 
