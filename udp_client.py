@@ -35,7 +35,6 @@ class RDT_UDPClient:
     def _initial_packet(self):
         self._headers["file_name"] = self.file_to_send
         self._headers["size_bytes"] = self.file_size
-        self.seq_to_send += 1
 
     def _middle_packets(self):
         sending_size = (self.file_size - self.seq_to_send) % self._max_packet_size
