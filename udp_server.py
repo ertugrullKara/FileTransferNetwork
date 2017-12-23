@@ -12,12 +12,12 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file_name = "default.txt"
     file_size = 0
     file = None
+    last_succ_byte = 0
+    waiting_for_byte = 0
     buffer = []
     package_coming = []
 
     def _init(self):
-        self.last_succ_byte = 0
-        self.waiting_for_byte = 0
         self.file_name = self._headers["file_name"]
         self.file_size = int(self._headers["size_bytes"])
         self.file = open(self.file_name, 'wb')
