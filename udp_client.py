@@ -45,6 +45,7 @@ class RDT_UDPClient:
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
+        self.seq_to_send += sending_size
 
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
@@ -54,7 +55,6 @@ class RDT_UDPClient:
             message += ':' + str(hash(message))  # Checksum
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
-            print response, "received."
             queue.put(int(response.split(':')[0]))
         except:  # Timeout
             pass
@@ -79,7 +79,6 @@ class RDT_UDPClient:
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
                 msg = queue.get(timeout=1)
-                print msg
                 if msg == "END":
                     break
                 else:

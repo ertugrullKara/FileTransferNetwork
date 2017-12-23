@@ -9,6 +9,7 @@ def utf8len(s):
 last_succ_byte = 0
 waiting_for_byte = 0
 file = None
+allow_initial = True
 
 class RDT_UDPHandler(SS.BaseRequestHandler):
     file_name = "default.txt"
@@ -16,7 +17,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file = None
     buffer = []
     package_coming = []
-    allow_initial = True
 
     def _init(self):
         global file
@@ -24,13 +24,12 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.file_size = int(self._headers[1])
         file = open(self.file_name, 'wb')
 
-
     def _finish(self):
-        global file
+        global file, allow_initial
         if last_succ_byte != self.file_size:
             return False
         file.close()
-        self.allow_initial = True
+        allow_initial = True
         return True
 
     def __received_bytes__(self, bytes):
@@ -39,7 +38,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         waiting_for_byte = last_succ_byte + 1
 
     def __check_send_ACK__(self):
-        global last_succ_byte, waiting_for_byte, file
+        global last_succ_byte, waiting_for_byte, file, allow_initial
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
