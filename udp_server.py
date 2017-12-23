@@ -53,7 +53,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
-            file.write(self._message)
+            file.write(self._message.encode("utf8"))
             # Write buffered messages to file.
             self.buffer.sort(key=lambda tup: tup[0])
             for buffered_item in self.buffer:
