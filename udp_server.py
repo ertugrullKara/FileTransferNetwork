@@ -65,7 +65,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
-        elif coming_seq_number + msg_bytes == self.file_size:
+        elif coming_seq_number == self.file_size:
             self._finish()  # Finished.
             waiting_for_byte = -1
         elif coming_seq_number + 1 > waiting_for_byte:
