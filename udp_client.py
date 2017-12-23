@@ -17,8 +17,8 @@ class RDT_UDPClient:
     file = None
     sock = None
 
-    def __init__(self, packet_size):
-        self._packet_size = packet_size
+    def __init__(self, max_packet_size):
+        self._max_packet_size = max_packet_size + 1
         self._headers = {}
         self._data = {}
         self.seq_to_send = 0
@@ -38,7 +38,7 @@ class RDT_UDPClient:
         self.seq_to_send += 1
 
     def _middle_packets(self):
-        sending_size = (self.file_size - self.seq_to_send) % 601
+        sending_size = (self.file_size - self.seq_to_send) % self._max_packet_size
         data = self.file.read(sending_size)
         self._headers["seq"] = self.seq_to_send
         self._data = data
@@ -84,5 +84,5 @@ class RDT_UDPClient:
 
 
 if __name__ == "__main__":
-    client = RDT_UDPClient(packet_size=800)
+    client = RDT_UDPClient(max_packet_size=10)
     client.send_file("5mb.txt")

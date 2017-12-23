@@ -35,6 +35,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def __check_send_ACK__(self):
         coming_seq_number = int(self._headers["seq"])
         msg_bytes = utf8len(self._message)
+        print "Check ACK"
+        print coming_seq_number, self.waiting_for_byte
         if coming_seq_number == 0:
             # Initial packet has arrived.
             # Get properties.
