@@ -50,7 +50,6 @@ class RDT_UDPClient:
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
             # Send message
-            print "Last:", last
             print "Sending:",
             print seq_to_send
             message += ':' + str(hash(message))  # Checksum
@@ -61,7 +60,6 @@ class RDT_UDPClient:
         except:  # Timeout
             pass
         if last:
-            print "Putting end"
             queue.put("END")
 
     def send_file(self, file_name="5mb.txt"):
@@ -82,6 +80,7 @@ class RDT_UDPClient:
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
                 msg = queue.get(timeout=1)
+                print msg
                 if msg == "END":
                     break
                 else:
