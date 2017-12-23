@@ -54,8 +54,8 @@ class RDT_UDPClient:
         self._prepare_packet()
         try:
             # Send message
-            self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
-            self.response = self.sock.recv(1024)
+            self.sock.sendto(json.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
+            self.response = json.loads(self.sock.recv(1024))
             self._check_incoming_ack()
         except: # Timeout
             pass
