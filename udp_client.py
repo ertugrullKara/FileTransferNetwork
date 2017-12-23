@@ -45,6 +45,7 @@ class RDT_UDPClient:
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
+        self.packeted_seq = self.seq_to_send
         self.seq_to_send += sending_size
 
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
@@ -69,7 +70,7 @@ class RDT_UDPClient:
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
-                send_packet = Process(target=self._send_packet, args=(queue, self.seq_to_send,
+                send_packet = Process(target=self._send_packet, args=(queue, self.packeted_seq,
                                                                       self.message, self.sock,
                                                                       self.dest_ip[self.dest_ip_index],
                                                                       self.dest_port, i==(windowsize-1)))
