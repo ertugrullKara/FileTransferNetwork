@@ -2,17 +2,31 @@ import socket
 import sctp
 
 
-class SCTPHandler:
-	def __init__(self, filename):
-		self.dest_ip_port_tuples = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
-		self.filename = filename
-		self.file = open(self.filename, 'wb')
+def utf8len(s):
+    return len(s.encode('utf-8'))
 
-	def send(self):
-		sock = sctp.sctpsocket_tcp(socket.AF_INET)
-		sock.connectx(self.dest_ip_port_tuples)
-		sock.send(self.file.read())
+
+class SCTPHandler:
+    def __init__(self, filename):
+        self.dest_ip_port_tuples = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
+        self.filename = filename
+        self.file = open(self.filename, 'wb')
+        self.file_content = self.file.read()
+        self.file_size = utf8len(self.file_content)
+        self.buffer_size = 980
+
+    def send(self):
+        sock = sctp.sctpsocket_tcp(socket.AF_INET)
+        sock.connect(self.dest_ip_port_tuples[0])
+        initial_info = self.filename + ':' + str(self.buffer_size) + ":" + str(self.file_size)
+        sock.send(initial_info)
+        read_bytes = 0
+        while 1:
+            next_pack = min(self.buffer_size, self.file_size - read_bytes)
+            sock.send(self.file_content[read_bytes:read_bytes + next_pack])
+            read_bytes += next_pack
+
 
 if __name__ == "__main__":
-	sctp_client = SCTPHandler("5mb.txt")
-	sctp_client.send()
+    sctp_client = SCTPHandler("5mb.txt")
+    sctp_client.send()

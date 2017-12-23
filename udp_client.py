@@ -1,6 +1,7 @@
 import socket
 import time
-
+from multiprocessing import Process
+from Queue import Queue
 
 def utf8len(s):
     return len(s.encode('utf-8'))
@@ -46,25 +47,41 @@ class RDT_UDPClient:
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
 
+    def _send_packet(self, queue, last):
+        self._prepare_packet()
+        try:
+            # Send message
+            print "Sending:",
+            print self.seq_to_send
+            self.message += ':' + str(hash(self.message))  # Checksum
+            self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
+            self.response = self.sock.recv(1024)
+            queue.put(int(self.response.split(':')[0]))
+        except:  # Timeout
+            pass
+        if last:
+            queue.put("END")
+
     def send_file(self, file_name="5mb.txt"):
         self.file_to_send = file_name
         self._open_file()
+        queue = Queue()
+        windowsize = 2
         while self.ack_came < self.file_size:
-            self._prepare_packet()
-            try:
-                # Send message
-                print "Sending:",
-                print self.seq_to_send
-                self.message += ':' + str(hash(self.message))   # Checksum
-                self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
-                self.response = self.sock.recv(1024)
-                self._check_incoming_ack()
-            except: # Timeout
-                pass
+            for i in range(windowsize):
+                send_packet = Process(target=self._send_packet, args=(queue, i==windowsize-1))
+                send_packet.daemon = True
+                send_packet.start()
+            while True:
+                msg = queue.get()
+                if msg != "END":
+                    self._check_incoming_ack(msg)
+                else:
+                    break
             self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip)   # Alternate between ip's. [Multi-homing]
 
-    def _check_incoming_ack(self):
-        self.ack_came = int(self.response.split(':')[0])
+    def _check_incoming_ack(self, incoming_ack):
+        self.ack_came = incoming_ack
         print "Incoming ACK:",
         print self.ack_came
         if self.ack_came  == self.seq_to_send:
