@@ -87,6 +87,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._data = json.loads(self.request[0].strip())
         self._headers = self._data["header"]
         self._message = json.dumps(self._data["payload"])
+		print self._headers
+		print self._message
+		print "Packet end.\n"
 
 
         # TODO: Checksum?

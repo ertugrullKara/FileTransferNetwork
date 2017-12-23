@@ -59,6 +59,8 @@ class RDT_UDPClient:
                 # Send message
                 self.sock.sendto(json.dumps(self.message), (self.dest_ip[self.dest_ip_index], self.dest_port))
                 self.response = json.loads(self.sock.recv(1024))
+                print "Sent:"
+                print self.message
                 self._check_incoming_ack()
             except: # Timeout
                 pass
@@ -66,6 +68,7 @@ class RDT_UDPClient:
 
     def _check_incoming_ack(self):
         incoming_ack = self.response["header"]["ack"]
+        print "Incoming ack:", incoming_ack
         self.ack_came = incoming_ack
         if incoming_ack  == self.seq_to_send:
             pass #Basarili
