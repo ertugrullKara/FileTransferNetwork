@@ -98,18 +98,16 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.__check_send_ACK__()
 
 
-class ThreadedUDPServer(SS.ThreadingMixIn, SS.UDPServer):
+class ForkingUDPServer(SS.ForkingMixIn, SS.UDPServer):
     pass
 
 
 if __name__ == "__main__":
-    # TODO: Multi-homing? Ana bir UDP portu olup buraya gelen her initial istek icin yeni socket acip,
-    # TODO: sonrasinda gelen paketleri oralara yonlendirme gibi bir sey?
     USED_PORT = 8765
     HOST, PORT = "", USED_PORT
 
     # Open threaded-server for link.
-    server = ThreadedUDPServer((HOST, PORT), RDT_UDPHandler)
+    server = ForkingUDPServer((HOST, PORT), RDT_UDPHandler)
     ip, port = server.server_address
 
     # Start a thread with the server -- that thread will then start one
