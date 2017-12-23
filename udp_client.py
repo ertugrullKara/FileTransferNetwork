@@ -44,11 +44,11 @@ class RDT_UDPClient:
         self.seq_to_send += sending_size
 
     def _prepare_packet(self):
-        self._headers["seq"] = self.seq_to_send
         if self.seq_to_send <= 0:
             self._initial_packet()
         else:
             self._middle_packets()
+        self._headers["seq"] = self.seq_to_send
         self.message = {"header": self._headers, "payload": self._data}
 
     def send_file(self, file_name="5mb.txt"):
