@@ -27,9 +27,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __received_bytes__(self, bytes):
         global last_succ_byte, waiting_for_byte
-        with _lock:
-            last_succ_byte += bytes
-            waiting_for_byte = last_succ_byte
+        last_succ_byte += bytes
+        waiting_for_byte = last_succ_byte
 
     def __check_send_ACK__(self):
         global file, allow_initial, buffer
@@ -44,8 +43,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             self._init()
             with _lock:
                 file.write(self._message)
-            self.__received_bytes__(msg_bytes)
-            with _lock:
+                self.__received_bytes__(msg_bytes)
                 allow_initial = False
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
@@ -53,8 +51,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             self.__received_bytes__(msg_bytes)
             with _lock:
                 file.write(self._message)
-            # Write buffered messages to file.
-            with _lock:
+                # Write buffered messages to file.
                 buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
                     file.write(buffered_item[1])
@@ -78,9 +75,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             raise NotImplementedError
 
         # Send new ACK.
-        print "Sending ACK: ",
+        print "Sending ACK:",
         print waiting_for_byte
-        self._send(waiting_for_byte)
 
     def _send(self, seq):
         socket = self.request[1]
@@ -103,6 +99,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             self._send(waiting_for_byte)
 
         self.__check_send_ACK__()
+        self._send(waiting_for_byte)
 
 
 class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
