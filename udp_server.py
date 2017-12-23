@@ -30,7 +30,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __received_bytes__(self, bytes):
         self.last_succ_byte += bytes
-        self.waiting_for_byte = self.last_succ_byte + 1
+        self.waiting_for_byte = self.last_succ_byte
 
     def __check_send_ACK__(self):
         coming_seq_number = int(self._headers["seq"])
@@ -43,7 +43,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Initial packet has arrived.
             # Get properties.
             self._init()
-            # self.__received_bytes__(1)
+            self.__received_bytes__(1)
         elif coming_seq_number == self.waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
