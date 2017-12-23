@@ -33,7 +33,7 @@ class RDT_UDPClient:
 
     def _initial_packet(self):
         self._headers["file_name"] = self.file_to_send
-        self._headers["size_bytes"] = utf8len(self.file.read())
+        self._headers["size_bytes"] = self.file_size
         self.seq_to_send += 1
 
     def _middle_packets(self):
@@ -68,7 +68,9 @@ class RDT_UDPClient:
 
     def _check_incoming_ack(self):
         incoming_ack = self.response["header"]["ack"]
-        print "Incoming ack:", incoming_ack
+        print "Incoming packet:"
+        print self.response
+        print "End\n"
         self.ack_came = incoming_ack
         if incoming_ack  == self.seq_to_send:
             pass #Basarili
