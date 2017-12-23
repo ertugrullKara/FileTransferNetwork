@@ -52,6 +52,7 @@ class RDT_UDPClient:
 
     def send_file(self, file_name="5mb.txt"):
         self.file_to_send = file_name
+        self._open_file()
         while self.ack_came < self.file_size:
             self._prepare_packet()
             try:
