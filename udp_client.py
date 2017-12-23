@@ -47,15 +47,15 @@ class RDT_UDPClient:
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
 
-    def _send_packet(self, queue, last):
+    def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
             # Send message
             print "Sending:",
-            print self.seq_to_send
-            self.message += ':' + str(hash(self.message))  # Checksum
-            self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
-            self.response = self.sock.recv(1024)
-            queue.put(int(self.response.split(':')[0]))
+            print seq_to_send
+            message += ':' + str(hash(message))  # Checksum
+            sock.sendto(message, (dest_ip, dest_port))
+            response = sock.recv(1024)
+            queue.put(int(response.split(':')[0]))
         except:  # Timeout
             pass
         if last:
@@ -69,11 +69,14 @@ class RDT_UDPClient:
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
-                send_packet = Process(target=self._send_packet, args=(queue, i==windowsize-1))
+                send_packet = Process(target=self._send_packet, args=(queue, self.seq_to_send,
+                                                                      self.message, self.sock,
+                                                                      self.dest_ip[self.dest_ip_index],
+                                                                      self.dest_port, i==windowsize-1))
                 send_packet.daemon = True
                 send_packet.start()
             while True:
-                msg = queue.get()
+                msg = queue.get(1)
                 if msg != "END":
                     self._check_incoming_ack(msg)
                 else:
