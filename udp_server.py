@@ -70,7 +70,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             self.buffer = []
         elif coming_seq_number == self.file_size:
             self._finish()  # Finished.
-            waiting_for_byte = -1
         elif coming_seq_number + 1 > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
