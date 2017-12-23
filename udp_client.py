@@ -34,6 +34,7 @@ class RDT_UDPClient:
         self.file_size = utf8len(self.file_content)
 
     def _initial_packet(self):
+        self._data = ""
         self._headers["file_name"] = self.file_to_send
         self._headers["size_bytes"] = self.file_size
 
@@ -42,7 +43,6 @@ class RDT_UDPClient:
         data = self.file_content[self.seq_to_send:sending_size]
         self._headers["seq"] = self.seq_to_send
         self._data = data
-        self.seq_to_send += sending_size
 
     def _prepare_packet(self):
         if self.seq_to_send <= 0:
