@@ -33,7 +33,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def __received_bytes__(self, bytes):
         global last_succ_byte, waiting_for_byte
         last_succ_byte += bytes
-        waiting_for_byte = last_succ_byte
+        waiting_for_byte = last_succ_byte + 1
 
     def __check_send_ACK__(self):
         global last_succ_byte, waiting_for_byte, file

@@ -42,7 +42,7 @@ class RDT_UDPClient:
         else:
             self._headers = "_"
         sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
-        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
+        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size].replace('\n', '\\n')
         self._headers += str(self.seq_to_send)
         self.message = self._headers + ':' + self._data
 
