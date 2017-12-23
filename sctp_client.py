@@ -10,7 +10,7 @@ class SCTPHandler:
     def __init__(self, filename):
         self.dest_ip_port_tuples = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
         self.filename = filename
-        self.file = open(self.filename, 'wb')
+        self.file = open(self.filename, 'rb')
         self.file_content = self.file.read()
         self.file_size = utf8len(self.file_content)
         self.buffer_size = 980
