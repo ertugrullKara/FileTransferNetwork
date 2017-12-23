@@ -44,13 +44,13 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         print coming_seq_number
         msg_bytes = utf8len(self._message)
 
-        if coming_seq_number == 0 and self.allow_initial:
+        if coming_seq_number == 0 and allow_initial:
             # Initial packet has arrived.
             # Get properties.
             self._init()
             file.write(self._message)
             self.__received_bytes__(msg_bytes)
-            self.allow_initial = False
+            allow_initial = False
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
