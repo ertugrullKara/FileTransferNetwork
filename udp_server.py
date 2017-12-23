@@ -94,7 +94,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._headers = self._data.split(':')[0].split('_')
         self._message = self._data.split(':')[1]
         self._checksum = int(self._data.split(':')[2])
-        if hash(self._data) != self._checksum:
+        if hash(":".join(self._data.split(':')[:-1])) != self._checksum:
             print "CHECKSUM_ERROR"
             print "Sending ACK:",
             print waiting_for_byte
