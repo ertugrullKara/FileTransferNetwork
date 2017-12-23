@@ -55,13 +55,13 @@ class RDT_UDPClient:
                 # Send message
                 print "Sending:",
                 print self.seq_to_send
+                self.message += ':' + str(hash(self.message))   # Checksum
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 self.response = self.sock.recv(1024)
                 self._check_incoming_ack()
             except: # Timeout
                 pass
             self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip)   # Alternate between ip's. [Multi-homing]
-            time.sleep(1)
 
     def _check_incoming_ack(self):
         self.ack_came = int(self.response.split(':')[0])
