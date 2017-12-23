@@ -9,6 +9,7 @@ def utf8len(s):
 
 last_succ_byte = 0
 waiting_for_byte = 0
+file = None
 
 class RDT_UDPHandler(SS.BaseRequestHandler):
     file_name = "default.txt"
@@ -18,14 +19,16 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     package_coming = []
 
     def _init(self):
+        global file
         self.file_name = self._headers["file_name"]
         self.file_size = int(self._headers["size_bytes"])
-        self.file = open(self.file_name, 'wb')
+        file = open(self.file_name, 'wb')
 
     def _finish(self):
+        global file
         if last_succ_byte != self.file_size:
             return False
-        self.file.close()
+        file.close()
         return True
 
     def __received_bytes__(self, bytes):
@@ -34,7 +37,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         waiting_for_byte = last_succ_byte
 
     def __check_send_ACK__(self):
-        global last_succ_byte, waiting_for_byte
+        global last_succ_byte, waiting_for_byte, file
         coming_seq_number = int(self._headers["seq"])
         msg_bytes = utf8len(self._message)
         print "Check ACK"
@@ -50,11 +53,11 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
-            self.file.write(self._message)
+            file.write(self._message)
             # Write buffered messages to file.
             self.buffer.sort(key=lambda tup: tup[0])
             for buffered_item in self.buffer:
-                self.file.write(buffered_item[1])
+                file.write(buffered_item[1])
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
