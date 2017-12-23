@@ -52,6 +52,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
+        elif coming_seq_number + msg_bytes == self.file_size:
+            self._finish()  # Finished.
+            self.waiting_for_byte = -1
         elif coming_seq_number + 1 > self.waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
@@ -60,9 +63,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Already arrived packet came again.
             # Just send the same ACK.
             pass
-        elif coming_seq_number + msg_bytes == self.file_size:
-            self._finish()  # Finished.
-            self.waiting_for_byte = -1
         else:
             print self._headers
             print self._data
@@ -84,7 +84,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Function to run when new UDP request came to the server.
 
         # Extract request
-        print self.request[1]
         self._data = json.loads(self.request[0].strip())
         self._headers = self._data["header"]
         self._message = json.dumps(self._data["payload"])

@@ -1,5 +1,6 @@
 import json
 import socket
+import time
 
 
 def utf8len(s):
@@ -66,6 +67,7 @@ class RDT_UDPClient:
             except: # Timeout
                 pass
             self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip)   # Alternate between ip's. [Multi-homing]
+            time.sleep(1)
 
     def _check_incoming_ack(self):
         incoming_ack = self.response["header"]["ack"]
