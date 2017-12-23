@@ -22,12 +22,14 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.file_name = self._headers[0]
         self.file_size = int(self._headers[1])
         file = open(self.file_name, 'wb')
+        self.allow_initial = True
 
     def _finish(self):
         global file
         if last_succ_byte != self.file_size:
             return False
         file.close()
+        self.allow_initial = True
         return True
 
     def __received_bytes__(self, bytes):
@@ -42,12 +44,13 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         print coming_seq_number
         msg_bytes = utf8len(self._message)
 
-        if coming_seq_number == 0:
+        if coming_seq_number == 0 and self.allow_initial:
             # Initial packet has arrived.
             # Get properties.
             self._init()
             file.write(self._message)
             self.__received_bytes__(msg_bytes)
+            self.allow_initial = False
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.

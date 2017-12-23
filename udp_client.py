@@ -55,6 +55,7 @@ class RDT_UDPClient:
             message += ':' + str(hash(message))  # Checksum
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
+            print response, "received."
             queue.put(int(response.split(':')[0]))
         except:  # Timeout
             pass
@@ -75,13 +76,14 @@ class RDT_UDPClient:
                                                                       self.dest_port, i==windowsize-1))
                 send_packet.daemon = True
                 send_packet.start()
+                self.dest_ip_index = (self.dest_ip_index + 1) % len(
+                    self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
                 msg = queue.get(1)
                 if msg != "END":
                     self._check_incoming_ack(msg)
                 else:
                     break
-            self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip)   # Alternate between ip's. [Multi-homing]
 
     def _check_incoming_ack(self, incoming_ack):
         self.ack_came = incoming_ack
