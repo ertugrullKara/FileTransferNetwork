@@ -4,13 +4,13 @@ import sctp
 
 class SCTPHandler:
     def __init__(self, filename):
-        self.port = 8765
+        self.dest_ip_port_tuples = [["10.10.2.2", 8765], ["10.10.4.2", 8765]]
         self.filename = filename
         self.file = open(self.filename, 'wb')
 
     def serve(self):
         sock = sctp.sctpsocket_tcp(socket.AF_INET)
-        sock.bind(("", self.port))
+        sock.bindx(self.dest_ip_port_tuples)
         sock.listen(10)
 
         while 1:

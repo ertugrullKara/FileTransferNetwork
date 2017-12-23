@@ -10,7 +10,6 @@ class SCTPHandler:
 
 	def send(self):
 		sock = sctp.sctpsocket_tcp(socket.AF_INET)
-		sock.bindx(self.dest_ip_port_tuples)
 		sock.connectx(self.dest_ip_port_tuples)
 		sock.send(self.file.read())
 
