@@ -9,6 +9,7 @@ def utf8len(s):
 
 class RDT_UDPHandler(SS.BaseRequestHandler):
 	file_name = "default.txt"
+	file_size = 0
 	file = None
 	last_succ_byte = 0
 	waiting_for_byte = last_succ_byte + 1
@@ -17,11 +18,14 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
 	def _init(self):
 		self.file_name = self._headers["file_name"]
+		self.file_size = self._headers["size_bytes"]
 		self.file = open(self.file_name, 'wb')
 
 	def _finish(self):
-		# TODO: Can there be items left in buffer?
+		if self.last_succ_byte != self.file_size:
+			return False
 		self.file.close()
+		return True
 
 	def __received_bytes__(self, bytes):
 		self.last_succ_byte += bytes
@@ -57,7 +61,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 			# Just send the same ACK.
 			pass
 		elif self._headers["last"]:
-			self._finish()
+			if self._finish():	# Finished.
+				self.waiting_for_byte = -1
+			else:				# Not finished. Send last ACK.
+				pass
 		else:
 			print self._headers
 			print self._data
