@@ -72,11 +72,11 @@ class RDT_UDPClient:
         print self.response
         print "End\n"
         self.ack_came = int(incoming_ack)
-        if incoming_ack  == self.seq_to_send:
+        if self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:
             # Bigger or lower ack
-            self.seq_to_send = incoming_ack
+            self.seq_to_send = self.ack_came
 
 
 
