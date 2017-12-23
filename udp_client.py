@@ -29,7 +29,7 @@ class RDT_UDPClient:
         self.sock.settimeout(0.5)
 
     def _open_file(self):
-        self.file = open(self.file_to_send, 'r')
+        self.file = open(self.file_to_send, 'rb')
         self.file_size = utf8len(self.file.read())
 
     def _initial_packet(self):
