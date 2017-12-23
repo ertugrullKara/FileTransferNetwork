@@ -13,7 +13,7 @@ class SCTPHandler:
         self.file = open(self.filename, 'rb')
         self.file_content = self.file.read()
         self.file_size = utf8len(self.file_content)
-        self.buffer_size = 980
+        self.buffer_size = 9
 
     def send(self):
         sock = sctp.sctpsocket_tcp(socket.AF_INET)
@@ -23,7 +23,7 @@ class SCTPHandler:
         read_bytes = 0
         while 1:
             next_pack = min(self.buffer_size, self.file_size - read_bytes)
-            sock.connect(self.dest_ip_port_tuples[0])
+            print self.file_content[read_bytes:read_bytes + next_pack]
             sock.send(self.file_content[read_bytes:read_bytes + next_pack])
             read_bytes += next_pack
 
