@@ -56,6 +56,9 @@ class RDT_UDPClient:
             message += ':' + str(hash(message))  # Checksum
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
+            checksum = int(response.split(':')[2])
+            if hash(":".join(response.split(':')[:-1])) != checksum:
+                return
             queue.put(int(response.split(':')[0]))
         except:  # Timeout
             pass
