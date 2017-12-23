@@ -12,7 +12,7 @@ class RDT_UDPClient:
     dest_ip_index = 0
     dest_port = 8765
     file_to_send = "5mb.txt"
-    seq_to_send = -1
+    seq_to_send = 0
     ack_came = 0
     file = None
     sock = None
@@ -21,7 +21,7 @@ class RDT_UDPClient:
         self._max_packet_size = max_packet_size + 1
         self._headers = {}
         self._data = {}
-        self.seq_to_send = -1
+        self.seq_to_send = 0
         self.ack_came = 0
         self.file = None
         # Open socket
@@ -34,10 +34,10 @@ class RDT_UDPClient:
         self.file_size = utf8len(self.file_content)
 
     def _initial_packet(self):
-        self._data = ""
+        sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
+        self._data = self.file_content[self.seq_to_send:self.seq_to_send+sending_size]
         self._headers["file_name"] = self.file_to_send
         self._headers["size_bytes"] = self.file_size
-        self.seq_to_send = 0
 
     def _middle_packets(self):
         sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
@@ -46,7 +46,7 @@ class RDT_UDPClient:
         self._data = data
 
     def _prepare_packet(self):
-        if self.seq_to_send < 0:
+        if self.seq_to_send <= 0:
             self._initial_packet()
         else:
             self._headers = {}
@@ -81,7 +81,7 @@ class RDT_UDPClient:
             pass #Basarili
         else:
             # Bigger or lower ack
-            self.seq_to_send = self.ack_came - 1
+            self.seq_to_send = self.ack_came
 
 
 

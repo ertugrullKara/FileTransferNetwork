@@ -44,15 +44,17 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         print coming_seq_number, waiting_for_byte
         print "Packet end.\n"
 
-        if coming_seq_number == -1:
+        if coming_seq_number == 0:
             # Initial packet has arrived.
             # Get properties.
             self._init()
+            file.write(self._message)
+            self.__received_bytes__(msg_bytes)
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
-            file.write(self._message.encode("utf8"))
+            file.write(self._message)
             # Write buffered messages to file.
             self.buffer.sort(key=lambda tup: tup[0])
             for buffered_item in self.buffer:
@@ -72,7 +74,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Just send the same ACK.
             pass
         else:
-            print self._headers
             print self._data
             print "ERROR!"
             raise NotImplementedError
