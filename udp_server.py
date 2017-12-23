@@ -23,21 +23,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self.file_size = int(self._headers[1])
         file = open(self.file_name, 'wb')
 
-    def _finish(self):
-        global last_succ_byte, waiting_for_byte, file, allow_initial
-        print last_succ_byte, self.file_size
-        if last_succ_byte != self.file_size:
-            return False
-        file.close()
-        allow_initial = True
-        last_succ_byte = 0
-        waiting_for_byte = 0
-        self.file_name = "default.txt"
-        self.file_size = 0
-        self.file = None
-        self.buffer = []
-        return True
-
     def __received_bytes__(self, bytes):
         global last_succ_byte, waiting_for_byte
         last_succ_byte += bytes
@@ -69,8 +54,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
-        elif coming_seq_number == self.file_size:
-            self._finish()  # Finished.
         elif coming_seq_number + 1 > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
