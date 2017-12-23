@@ -48,17 +48,17 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Initial packet has arrived.
             # Get properties.
             self._init()
-            file.write(self._message)
+            file.write(self._message.encode("utf8"))
             self.__received_bytes__(msg_bytes)
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
-            file.write(self._message)
+            file.write(self._message.encode("utf8"))
             # Write buffered messages to file.
             self.buffer.sort(key=lambda tup: tup[0])
             for buffered_item in self.buffer:
-                file.write(buffered_item[1])
+                file.write(buffered_item[1].encode("utf8"))
                 msg_bytes = utf8len(buffered_item[1])
                 self.__received_bytes__(msg_bytes)
             self.buffer = []
