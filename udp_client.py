@@ -37,10 +37,11 @@ class RDT_UDPClient:
         self.seq_to_send += 1
 
     def _middle_packets(self):
-        data = self.file.read(600)
+        sending_size = (self.file_size - self.seq_to_send) % 601
+        data = self.file.read(sending_size)
         self._headers["seq"] = self.seq_to_send
         self._data = data
-        self.seq_to_send += 600
+        self.seq_to_send += sending_size
 
     def _prepare_packet(self):
         self._headers["seq"] = self.seq_to_send
