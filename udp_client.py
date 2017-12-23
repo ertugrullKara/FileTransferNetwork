@@ -1,4 +1,4 @@
-import json
+import pickle as json
 import socket
 import time
 

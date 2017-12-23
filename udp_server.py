@@ -1,7 +1,7 @@
 import SocketServer as SS
 import threading
 import time
-import json
+import pickle as json
 
 
 def utf8len(s):
