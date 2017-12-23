@@ -16,13 +16,14 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     file = None
     buffer = []
     package_coming = []
+    allow_initial = True
 
     def _init(self):
         global file
         self.file_name = self._headers[0]
         self.file_size = int(self._headers[1])
         file = open(self.file_name, 'wb')
-        self.allow_initial = True
+
 
     def _finish(self):
         global file
