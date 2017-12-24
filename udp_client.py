@@ -1,6 +1,7 @@
 import socket
 import time
 from multiprocessing import Process, Queue
+import sys
 
 def utf8len(s):
     return len(s.encode('utf-8'))
@@ -117,6 +118,6 @@ class RDT_UDPClient:
 if __name__ == "__main__":
     client = RDT_UDPClient(max_packet_size=4)
     start = time.time()
-    client.send_file("5mb.txt")
+    client.send_file(sys.argv[1])
     end = time.time()
     print "Elapsed time:", end-start
