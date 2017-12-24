@@ -5,10 +5,10 @@ from multiprocessing import Process, Queue
 import sys
 
 def utf8len(s):
-    return len(s.encode('utf-8'))
+    return len(s.encode('latin1'))
 
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('latin1')
 
 class RDT_UDPClient:
     dest_ip = ["10.10.2.2", "10.10.4.2"]

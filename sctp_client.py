@@ -4,10 +4,10 @@ import sctp
 import time
 
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('latin1')
 
 def utf8len(s):
-    return len(s.encode('utf-8'))
+    return len(s.encode('latin1'))
 
 
 class SCTPHandler:
