@@ -86,7 +86,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 5000)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
@@ -134,7 +134,9 @@ class RDT_UDPClient:
         self.ack_came = incoming_ack
         print "Incoming ACK:",
         print self.ack_came
-        if self.ack_came  == self.seq_to_send:
+        if self.ack_came == self.file_size:
+            exit(1)
+        elif self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:
             # Bigger or lower ack
