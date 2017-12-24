@@ -78,7 +78,7 @@ class RDT_UDPClient:
             header_len = int(response[:5])
             queue.put((int(response[5:5+header_len]), rtt))
         except:  # Timeout
-            queue.put(("TIMEOUT", rtt))
+            queue.put(("TIMEOUT", rtt*2))
         if last:
             queue.put(("END", rtt))
 
@@ -101,7 +101,6 @@ class RDT_UDPClient:
             while True:
                 try:
                     msg, new_rtt = queue.get(timeout=1)
-                    print msg, new_rtt, "windows", windowsize
                     if msg == "END":
                         break
                     elif msg == "TIMEOUT":
