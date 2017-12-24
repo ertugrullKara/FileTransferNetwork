@@ -1,8 +1,8 @@
+import hashlib
 import socket
+import sys
 import time
 from multiprocessing import Process, Queue
-import sys
-import hashlib
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -48,7 +48,7 @@ class RDT_UDPClient:
         if self.seq_to_send <= 1000000:
             self._initial_packet()
         else:
-            self._headers = "_"
+            self._headers = ""
         sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
