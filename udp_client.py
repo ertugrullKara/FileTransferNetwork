@@ -11,10 +11,6 @@ sys.setdefaultencoding('utf8')
 def utf8len(s):
     return len(s.encode('ascii'))
 
-estimated_rtt = 0.5
-rtt_lock = Lock()
-_rtt_alpha = 0.65
-
 class RDT_UDPClient:
     dest_ip = ["10.10.2.2", "10.10.4.2"]
     dest_ip_index = 0
@@ -34,6 +30,8 @@ class RDT_UDPClient:
         self.file = None
         # Open socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.estimated_rtt = 0.5
+        self._rtt_alpha = 0.65
 
     def _open_file(self):
         self.file = open(self.file_to_send, 'rb')
@@ -60,31 +58,29 @@ class RDT_UDPClient:
         self.packeted_seq = self.seq_to_send
         self.seq_to_send += self._sending_size
 
-    def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, estimated_rtt, last):
+    def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, rtt, last):
         try:
             # Send message
-            sock.settimeout(estimated_rtt)
+            sock.settimeout(rtt)
             # print "Sending:",
             # print seq_to_send
             message += hashlib.md5(message).digest()  # Checksum
-            print len(message), estimated_rtt
             sent = time.time()
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
             rcvd = time.time()
-            with rtt_lock:
-                estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*100
+            rtt = rtt * self._rtt_alpha + (1.0 - self._rtt_alpha) * (rcvd - sent)*100
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
                 print "CHECKSUM ERROR - ACK"
                 print response
                 return
             header_len = int(response[:5])
-            queue.put((int(response[5:5+header_len]), estimated_rtt))
+            queue.put((int(response[5:5+header_len]), rtt))
         except:  # Timeout
-            queue.put(("TIMEOUT", estimated_rtt))
+            queue.put(("TIMEOUT", rtt))
         if last:
-            queue.put(("END", estimated_rtt))
+            queue.put(("END", rtt))
 
     def send_file(self, file_name="input.txt"):
         self.file_to_send = file_name
@@ -97,7 +93,7 @@ class RDT_UDPClient:
                 send_packet = Process(target=self._send_packet, args=(queue, self.packeted_seq,
                                                                       self.message, self.sock,
                                                                       self.dest_ip[self.dest_ip_index],
-                                                                      self.dest_port, estimated_rtt, i==(windowsize-1)))
+                                                                      self.dest_port, self.estimated_rtt, i==(windowsize-1)))
                 send_packet.daemon = True
                 send_packet.start()
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
@@ -105,14 +101,14 @@ class RDT_UDPClient:
             while True:
                 try:
                     msg, new_rtt = queue.get(timeout=1)
+                    print msg, new_rtt, "windows", windowsize
                     if msg == "END":
                         break
                     elif msg == "TIMEOUT":
                         self.seq_to_send -= self._sending_size
                     else:
                         self._check_incoming_ack(msg)
-                    global estimated_rtt
-                    estimated_rtt = new_rtt
+                    self.estimated_rtt = new_rtt
                 except:
                     print "Queue timeout."
                     break
