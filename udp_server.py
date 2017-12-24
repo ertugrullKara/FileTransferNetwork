@@ -105,6 +105,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         self.__check_send_ACK__()
         self._send(waiting_for_byte)
+        print waiting_for_byte, self.file_size
         if waiting_for_byte == self.file_size:
             exit(1)
 
