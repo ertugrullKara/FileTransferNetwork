@@ -1,5 +1,6 @@
 import socket
 import sctp
+import time
 
 
 def utf8len(s):
@@ -31,4 +32,7 @@ class SCTPHandler:
 
 if __name__ == "__main__":
     sctp_client = SCTPHandler("5mb.txt")
+    start = time.time()
     sctp_client.send()
+    end = time.time()
+    print "Elapsed time:", end-start

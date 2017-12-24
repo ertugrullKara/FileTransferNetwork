@@ -116,4 +116,7 @@ class RDT_UDPClient:
 
 if __name__ == "__main__":
     client = RDT_UDPClient(max_packet_size=4)
+    start = time.time()
     client.send_file("5mb.txt")
+    end = time.time()
+    print "Elapsed time:", end-start
