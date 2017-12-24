@@ -16,7 +16,10 @@ class SCTPHandler:
         self.filename = filename
         self.file = open(self.filename, 'rb')
         self.file_content = self.file.read()
-        self.file_size = utf8len(self.file_content)
+        try:
+            self.file_size = utf8len(self.file_content)
+        except:
+            self.file_size = len(self.file_content)
         self.buffer_size = 980
 
     def send(self):
