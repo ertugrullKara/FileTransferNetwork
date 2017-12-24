@@ -78,7 +78,7 @@ class RDT_UDPClient:
             header_len = int(response[:5])
             queue.put((int(response[5:5+header_len]), rtt))
         except:  # Timeout
-            queue.put(("TIMEOUT", rtt*2))
+            queue.put(("TIMEOUT", rtt + 0.5))
         if last:
             queue.put(("END", rtt))
 
@@ -86,7 +86,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 100)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
