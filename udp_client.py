@@ -53,6 +53,7 @@ class RDT_UDPClient:
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + self._data
+        self.message = '{:03d}'.format(len(self._headers)) + self.message
         self.packeted_seq = self.seq_to_send
         self.seq_to_send += sending_size
 
