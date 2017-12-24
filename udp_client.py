@@ -75,6 +75,7 @@ class RDT_UDPClient:
             rcvd = time.time()
             with rtt_lock:
                 estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*1000
+                print estimated_rtt
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
                 print "CHECKSUM ERROR - ACK"
@@ -148,7 +149,7 @@ class RDT_UDPClient:
 
 
 if __name__ == "__main__":
-    client = RDT_UDPClient(max_packet_size=900)
+    client = RDT_UDPClient(max_packet_size=960)
     start = time.time()
     client.send_file(sys.argv[1])
     end = time.time()
