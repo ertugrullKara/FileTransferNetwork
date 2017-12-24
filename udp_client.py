@@ -60,9 +60,8 @@ class RDT_UDPClient:
         self.packeted_seq = self.seq_to_send
         self.seq_to_send += self._sending_size
 
-    def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
+    def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, estimated_rtt, last):
         try:
-            global estimated_rtt
             # Send message
             sock.settimeout(estimated_rtt)
             # print "Sending:",
@@ -81,12 +80,11 @@ class RDT_UDPClient:
                 print response
                 return
             header_len = int(response[:5])
-            queue.put(int(response[5:5+header_len]))
+            queue.put(int(response[5:5+header_len]), estimated_rtt)
         except:  # Timeout
-            queue.put("TIMEOUT")
+            queue.put("TIMEOUT", estimated_rtt)
         if last:
-            queue.put("END")
-        sock.settimeout(None)
+            queue.put("END", estimated_rtt)
 
     def send_file(self, file_name="input.txt"):
         self.file_to_send = file_name
@@ -99,20 +97,22 @@ class RDT_UDPClient:
                 send_packet = Process(target=self._send_packet, args=(queue, self.packeted_seq,
                                                                       self.message, self.sock,
                                                                       self.dest_ip[self.dest_ip_index],
-                                                                      self.dest_port, i==(windowsize-1)))
+                                                                      self.dest_port, estimated_rtt, i==(windowsize-1)))
                 send_packet.daemon = True
                 send_packet.start()
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
                 try:
-                    msg = queue.get(timeout=1)
+                    msg, new_rtt = queue.get(timeout=1)
                     if msg == "END":
                         break
                     elif msg == "TIMEOUT":
                         self.seq_to_send -= self._sending_size
                     else:
                         self._check_incoming_ack(msg)
+                    global estimated_rtt
+                    estimated_rtt = new_rtt
                 except:
                     print "Queue timeout."
                     break
