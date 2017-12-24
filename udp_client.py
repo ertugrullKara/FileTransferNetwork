@@ -64,7 +64,7 @@ class RDT_UDPClient:
         try:
             global estimated_rtt
             # Send message
-            self.sock.settimeout(estimated_rtt)
+            sock.settimeout(estimated_rtt)
             # print "Sending:",
             # print seq_to_send
             message += hashlib.md5(message).digest()  # Checksum
@@ -74,8 +74,7 @@ class RDT_UDPClient:
             response = sock.recv(1024)
             rcvd = time.time()
             with rtt_lock:
-                estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*1000
-                print estimated_rtt, _rtt_alpha, (1.0 - _rtt_alpha), (rcvd - sent)*1000
+                estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*100
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
                 print "CHECKSUM ERROR - ACK"
@@ -87,6 +86,7 @@ class RDT_UDPClient:
             queue.put("TIMEOUT")
         if last:
             queue.put("END")
+        sock.settimeout(None)
 
     def send_file(self, file_name="input.txt"):
         self.file_to_send = file_name
