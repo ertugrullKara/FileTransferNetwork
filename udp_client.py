@@ -60,8 +60,7 @@ class RDT_UDPClient:
             # Send message
             print "Sending:",
             print seq_to_send
-            print hash(message)
-            message += ':' + str(hash(message))  # Checksum
+            message += ':' + repr(hash(message))  # Checksum
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
             checksum = int(response.split(':')[2])
