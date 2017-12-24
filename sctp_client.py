@@ -24,7 +24,10 @@ class SCTPHandler:
 
     def send(self):
         sock = sctp.sctpsocket_tcp(socket.AF_INET)
-        sock.connect(self.dest_ip_port_tuples[0])
+        try:    # IF Multihoming supported SCTP is installed
+            sock.connectx(self.dest_ip_port_tuples)
+        except: # Except, run without multihoming
+            sock.connect(self.dest_ip_port_tuples[0])
         initial_info = self.filename + ':' + str(self.buffer_size) + ":" + str(self.file_size)
         sock.send(initial_info)
         read_bytes = 0
