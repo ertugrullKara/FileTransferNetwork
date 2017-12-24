@@ -52,7 +52,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
-        msg_bytes = utf8len(self._message)
+        try:
+            msg_bytes = utf8len(self._message)
+        except:
+            msg_bytes = len(self._message)
 
         if coming_seq_number == 0 and allow_initial:
             # Initial packet has arrived.
@@ -63,7 +66,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 allow_initial = False
                 buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
-                    msg_bytes = utf8len(buffered_item[1])
+                    try:
+                        msg_bytes = utf8len(buffered_item[1])
+                    except:
+                        msg_bytes = len(buffered_item[1])
                     self._write_message(buffered_item[1], msg_bytes)
                 buffer = []
         elif coming_seq_number == waiting_for_byte:
@@ -74,7 +80,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # Write buffered messages to file.
                 buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
-                    msg_bytes = utf8len(buffered_item[1])
+                    try:
+                        msg_bytes = utf8len(buffered_item[1])
+                    except:
+                        msg_bytes = len(buffered_item[1])
                     self._write_message(buffered_item[1], msg_bytes)
                 buffer = []
         elif coming_seq_number > waiting_for_byte:
