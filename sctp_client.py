@@ -3,6 +3,8 @@ import sys
 import sctp
 import time
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def utf8len(s):
     return len(s.encode('utf-8'))

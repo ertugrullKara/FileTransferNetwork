@@ -1,6 +1,9 @@
 import socket
 import sctp
+import sys
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class SCTPHandler:
     def __init__(self):
