@@ -1,8 +1,8 @@
 import SocketServer as SS
+import hashlib
+import sys
 import threading
 import time
-import sys
-import hashlib
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -116,7 +116,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         # Extract request
         self._data = self.request[0]
-        header_len = self._data[:3]
+        header_len = int(self._data[:3])
         self._headers = self._data[3:3+header_len].split('_')
         if waiting_for_byte == file_size and self._headers[-1] == "last":
             self._finish()
