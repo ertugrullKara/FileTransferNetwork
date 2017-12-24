@@ -2,6 +2,7 @@ import SocketServer as SS
 import threading
 import time
 import sys
+import hashlib
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -9,8 +10,8 @@ sys.setdefaultencoding('utf8')
 def utf8len(s):
     return len(s.encode('utf8'))
 
-last_succ_byte = 0
-waiting_for_byte = 0
+last_succ_byte = 1000000
+waiting_for_byte = 1000000
 file = None
 file_name = "default.txt"
 file_size = 0
@@ -39,8 +40,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def _finish(self):
         global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte
         with _lock:
-            last_succ_byte = 0
-            waiting_for_byte = 0
+            last_succ_byte = 1000000
+            waiting_for_byte = 1000000
             file = None
             file_name = "default.txt"
             file_size = 0
@@ -57,7 +58,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         except:
             msg_bytes = len(self._message)
 
-        if coming_seq_number == 0 and allow_initial:
+        if coming_seq_number == 1000000 and allow_initial:
             # Initial packet has arrived.
             # Get properties.
             self._init()
@@ -106,26 +107,25 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _send(self, seq):
         socket = self.request[1]
-        response = str(seq) + ':'
-        checksum = hash(response)
-        socket.sendto(response + ":" + str(checksum), self.client_address)
+        response = str(seq)
+        checksum = hashlib.md5(response).digest()
+        socket.sendto('{:03d}'.format(len(response)) + response + checksum, self.client_address)
 
     def handle(self):
         # Function to run when new UDP request came to the server.
 
         # Extract request
         self._data = self.request[0]
-        print self._data
-        # TODO: Checksum ve headerlar icin sabit byte sayilari lazim. Yoksa sikinti cikiyor.
-        self._headers = self._data.split(':')[0].split('_')
+        header_len = self._data[:3]
+        self._headers = self._data[3:3+header_len].split('_')
         if waiting_for_byte == file_size and self._headers[-1] == "last":
             self._finish()
             self._send(-1)
             print "\n\n\n"
             return
-        self._message = self._data.split(':')[1]
-        self._checksum = int(self._data.split(':')[2])
-        if hash(":".join(self._data.split(':')[:-1])) != self._checksum:
+        self._message = self._data[3+header_len:-16]
+        self._checksum = self._data[-16:]
+        if hashlib.md5(self._data[:-16]).digest() != self._checksum:
             print "CHECKSUM_ERROR"
             print "Sending ACK:",
             print waiting_for_byte

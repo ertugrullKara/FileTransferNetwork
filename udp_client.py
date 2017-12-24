@@ -1,8 +1,8 @@
 import socket
-import sys
 import time
 from multiprocessing import Process, Queue
 import sys
+import hashlib
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -15,21 +15,22 @@ class RDT_UDPClient:
     dest_ip_index = 0
     dest_port = 8765
     file_to_send = "5mb.txt"
-    seq_to_send = 0
-    ack_came = 0
+    seq_to_send = 1000000
+    ack_came = 1000000
     file = None
     sock = None
 
     def __init__(self, max_packet_size):
-        self._max_packet_size = max_packet_size + 1
+        self.timeout = 0.5
+        self._max_packet_size = max_packet_size
         self._headers = "_"
         self._data = ":"
-        self.seq_to_send = 0
-        self.ack_came = 0
+        self.seq_to_send = 1000000
+        self.ack_came = 1000000
         self.file = None
         # Open socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(0.5)
+        self.sock.settimeout(self.timeout)
 
     def _open_file(self):
         self.file = open(self.file_to_send, 'rb')
@@ -44,14 +45,14 @@ class RDT_UDPClient:
         self._headers += str(self.file_size) + '_'
 
     def _prepare_packet(self):
-        if self.seq_to_send <= 0:
+        if self.seq_to_send <= 1000000:
             self._initial_packet()
         else:
             self._headers = "_"
         sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
         self._headers += str(self.seq_to_send)
-        self.message = self._headers + ':' + self._data
+        self.message = self._headers + self._data
         self.packeted_seq = self.seq_to_send
         self.seq_to_send += sending_size
 
@@ -60,13 +61,14 @@ class RDT_UDPClient:
             # Send message
             print "Sending:",
             print seq_to_send
-            message += ':' + repr(hash(message))  # Checksum
+            message += hashlib.md5(message).digest()  # Checksum
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
-            checksum = int(response.split(':')[2])
-            if hash(":".join(response.split(':')[:-1])) != checksum:
+            checksum = response[-16:]
+            if hashlib.md5(response[:-16]).digest() != checksum:
                 return
-            queue.put(int(response.split(':')[0]))
+            header_len = int(response[:3])
+            queue.put(int(response[3:3+header_len]))
         except:  # Timeout
             pass
         if last:
@@ -89,22 +91,30 @@ class RDT_UDPClient:
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
             while True:
-                msg = queue.get(timeout=1)
-                if msg == "END":
-                    break
-                else:
-                    self._check_incoming_ack(msg)
+                try:
+                    msg = queue.get(timeout=1)
+                    if msg == "END":
+                        break
+                    else:
+                        self._check_incoming_ack(msg)
+                except:
+                    pass    # No packet came back.
         self._headers = "last"
-        self.message = self._headers + ':' + ""
-        self.message += ':' + str(hash(self.message))  # Checksum
+        self.message = self._headers + ""
+        self.message += str(hashlib.md5(self.message).digest())  # Checksum
+
+        self.message = '{:03d}'.format(len(self._headers)) + self.message
         while 1:
+            self.dest_ip_index = (self.dest_ip_index + 1) % len(
+                self.dest_ip)  # Alternate between ip's. [Multi-homing]
             try:
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 response = self.sock.recv(1024)
-                checksum = int(response.split(':')[2])
-                if hash(":".join(response.split(':')[:-1])) != checksum:
+                checksum = response[-16:]
+                if hashlib.md5(response[:-16]).digest() != checksum:
                     return
-                if int(response.split(':')[0]) == -1:
+                header_len = int(response[:3])
+                if int(response[3:3 + header_len]) == -1:
                     break
             except:
                 pass
