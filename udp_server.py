@@ -1,7 +1,10 @@
 import SocketServer as SS
 import threading
 import time
+import sys
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def utf8len(s):
     return len(s.encode('utf-8'))

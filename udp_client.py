@@ -7,6 +7,8 @@ import sys
 def utf8len(s):
     return len(s.encode('utf-8'))
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class RDT_UDPClient:
     dest_ip = ["10.10.2.2", "10.10.4.2"]
