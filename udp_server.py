@@ -102,8 +102,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             raise NotImplementedError
 
         # Send new ACK.
-        print "Sending ACK:",
-        print waiting_for_byte
+        # print "Sending ACK:",
+        # print waiting_for_byte
 
     def _send(self, seq):
         socket = self.request[1]

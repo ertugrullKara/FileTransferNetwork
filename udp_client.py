@@ -68,6 +68,7 @@ class RDT_UDPClient:
             # print "Sending:",
             # print seq_to_send
             message += hashlib.md5(message).digest()  # Checksum
+            print len(message), estimated_rtt
             sent = time.time()
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
