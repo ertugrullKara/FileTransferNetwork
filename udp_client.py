@@ -80,17 +80,17 @@ class RDT_UDPClient:
                 print response
                 return
             header_len = int(response[:5])
-            queue.put(int(response[5:5+header_len]), estimated_rtt)
+            queue.put((int(response[5:5+header_len]), estimated_rtt))
         except:  # Timeout
-            queue.put("TIMEOUT", estimated_rtt)
+            queue.put(("TIMEOUT", estimated_rtt))
         if last:
-            queue.put("END", estimated_rtt)
+            queue.put(("END", estimated_rtt))
 
     def send_file(self, file_name="input.txt"):
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = 10     # Set window size. It can be any arbitrary number.
+        windowsize = int(( self.file_size / 1000 ) / 3.0)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
