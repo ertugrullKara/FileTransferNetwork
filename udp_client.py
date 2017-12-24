@@ -86,7 +86,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 1)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
@@ -101,13 +101,13 @@ class RDT_UDPClient:
             while True:
                 try:
                     msg, new_rtt = queue.get(timeout=1)
+                    self.estimated_rtt = new_rtt
                     if msg == "END":
                         break
                     elif msg == "TIMEOUT":
                         self.seq_to_send -= self._sending_size
                     else:
                         self._check_incoming_ack(msg)
-                    self.estimated_rtt = new_rtt
                 except:
                     print "Queue timeout."
                     break
