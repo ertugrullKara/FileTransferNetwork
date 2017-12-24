@@ -86,7 +86,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = int(( self.file_size / 1000 ) / 3.0)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
