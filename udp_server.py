@@ -107,6 +107,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         if waiting_for_byte == file_size and self._headers[-1] == "last":
             self._finish()
             self._send(-1)
+            print "\n\n\n"
             return
         self._message = self._data.split(':')[1]
         self._checksum = int(self._data.split(':')[2])
