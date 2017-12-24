@@ -98,6 +98,15 @@ class RDT_UDPClient:
                 send_packet.start()
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
+                try:
+                    msg, new_rtt = queue.get_nowait()
+                    self.estimated_rtt = new_rtt
+                    if msg == "TIMEOUT":
+                        self.seq_to_send -= self._sending_size
+                    else:
+                        self._check_incoming_ack(msg)
+                except: # No item in queue yet
+                    pass
             while True:
                 try:
                     msg, new_rtt = queue.get(timeout=1)
