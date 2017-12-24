@@ -69,7 +69,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = 2
+        windowsize = 5
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
@@ -115,5 +115,5 @@ class RDT_UDPClient:
 
 
 if __name__ == "__main__":
-    client = RDT_UDPClient(max_packet_size=10)
+    client = RDT_UDPClient(max_packet_size=4)
     client.send_file("5mb.txt")
