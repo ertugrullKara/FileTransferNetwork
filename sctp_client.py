@@ -35,7 +35,8 @@ class SCTPHandler:
             sock.connectx(self.dest_ip_port_tuples)
             print "Multihoming."
         except: # Except, run without multihoming
-            sock.connect(self.dest_ip_port_tuples[0])
+            for ip_port_tuple in self.dest_ip_port_tuples:
+                sock.connect(ip_port_tuple)
         # Send initial info like filename etc
         initial_info = self.filename + ':' + str(self.buffer_size) + ":" + str(self.file_size)
         sock.send(initial_info)
