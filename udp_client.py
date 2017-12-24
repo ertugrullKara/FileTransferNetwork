@@ -87,6 +87,16 @@ class RDT_UDPClient:
                     break
                 else:
                     self._check_incoming_ack(msg)
+        self._headers = "last"
+        self.message += self._headers + ':' + "" + ':' + str(hash(self.message))  # Checksum
+        while 1:
+            self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
+            response = self.sock.recv(1024)
+            checksum = int(response.split(':')[2])
+            if hash(":".join(response.split(':')[:-1])) != checksum:
+                return
+            if int(response.split(':')[0]) == -1:
+                break
 
     def _check_incoming_ack(self, incoming_ack):
         self.ack_came = incoming_ack

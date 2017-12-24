@@ -106,17 +106,19 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._headers = self._data.split(':')[0].split('_')
         self._message = self._data.split(':')[1]
         self._checksum = int(self._data.split(':')[2])
-        if hash(":".join(self._data.split(':')[:-1])) != self._checksum:
+        if hash(":".join(self._data.split(':')[:2])) != self._checksum:
             print "CHECKSUM_ERROR"
             print "Sending ACK:",
             print waiting_for_byte
             self._send(waiting_for_byte)
+            return
 
         self.__check_send_ACK__()
-        self._send(waiting_for_byte)
-        # print waiting_for_byte, file_size
-        if waiting_for_byte == file_size:
+        if waiting_for_byte == file_size and self._headers == "last":
             self._finish()
+            self._send(-1)
+        else:
+            self._send(waiting_for_byte)
 
 
 class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
