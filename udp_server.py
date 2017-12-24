@@ -104,6 +104,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Extract request
         self._data = self.request[0]
         self._headers = self._data.split(':')[0].split('_')
+        if waiting_for_byte == file_size and self._headers == "last":
+            self._finish()
+            self._send(-1)
+            return
         self._message = self._data.split(':')[1]
         self._checksum = int(self._data.split(':')[2])
         if hash(":".join(self._data.split(':')[:-1])) != self._checksum:
@@ -114,11 +118,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             return
 
         self.__check_send_ACK__()
-        if waiting_for_byte == file_size and self._headers == "last":
-            self._finish()
-            self._send(-1)
-        else:
-            self._send(waiting_for_byte)
+        self._send(waiting_for_byte)
 
 
 class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
