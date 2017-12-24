@@ -65,8 +65,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                     msg_bytes = utf8len(buffered_item[1])
                     self._write_message(buffered_item[1], msg_bytes)
                 buffer = []
-            if waiting_for_byte == self.file_size:
-                exit(1)
         elif coming_seq_number > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
@@ -107,6 +105,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         self.__check_send_ACK__()
         self._send(waiting_for_byte)
+        if waiting_for_byte == self.file_size:
+            exit(1)
 
 
 class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
