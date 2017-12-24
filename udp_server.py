@@ -9,21 +9,19 @@ def utf8len(s):
 last_succ_byte = 0
 waiting_for_byte = 0
 file = None
+file_name = "default.txt"
+file_size = 0
 allow_initial = True
 buffer = []
 _lock = threading.Lock()
 
 
 class RDT_UDPHandler(SS.BaseRequestHandler):
-    file_name = "default.txt"
-    file_size = 0
-    file = None
-
     def _init(self):
-        global file
-        self.file_name = self._headers[0]
-        self.file_size = int(self._headers[1])
-        file = open(self.file_name, 'wb')
+        global file, file_name, file_size
+        file_name = self._headers[0]
+        file_size = int(self._headers[1])
+        file = open(file_name, 'wb')
 
     def __received_bytes__(self, bytes):
         global last_succ_byte, waiting_for_byte
@@ -105,8 +103,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         self.__check_send_ACK__()
         self._send(waiting_for_byte)
-        print waiting_for_byte, self.file_size
-        if waiting_for_byte == self.file_size:
+        # print waiting_for_byte, file_size
+        if waiting_for_byte == file_size:
             exit(1)
 
 
