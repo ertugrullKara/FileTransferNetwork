@@ -113,9 +113,8 @@ class RDT_UDPClient:
                     break
         self._headers = "last"
         self.message = self._headers + ""
-        self.message += str(hashlib.md5(self.message).digest())  # Checksum
-
         self.message = '{:05d}'.format(len(self._headers)) + self.message
+        self.message += hashlib.md5(self.message).digest()  # Checksum
         while 1:
             self.dest_ip_index = (self.dest_ip_index + 1) % len(
                 self.dest_ip)  # Alternate between ip's. [Multi-homing]
