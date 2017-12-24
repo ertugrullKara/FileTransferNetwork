@@ -28,6 +28,7 @@ class SCTPHandler:
         sock = sctp.sctpsocket_tcp(socket.AF_INET)
         try:    # IF Multihoming supported version of SCTP is installed
             sock.connectx(self.dest_ip_port_tuples)
+            print "Multihoming."
         except: # Except, run without multihoming
             sock.connect(self.dest_ip_port_tuples[0])
         initial_info = self.filename + ':' + str(self.buffer_size) + ":" + str(self.file_size)
