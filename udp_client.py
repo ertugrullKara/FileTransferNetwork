@@ -67,6 +67,8 @@ class RDT_UDPClient:
             response = sock.recv(1024)
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
+                print "CHECKSUM ERROR - ACK"
+                print response
                 return
             header_len = int(response[:3])
             queue.put(int(response[3:3+header_len]))
@@ -99,6 +101,7 @@ class RDT_UDPClient:
                     else:
                         self._check_incoming_ack(msg)
                 except:
+                    print "Queue timeout."
                     pass    # No packet came back.
         self._headers = "last"
         self.message = self._headers + ""
