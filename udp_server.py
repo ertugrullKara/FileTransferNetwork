@@ -33,6 +33,17 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         file.write(msg)
         self.__received_bytes__(msg_bytes)
 
+    def _finish(self):
+        global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte
+        with _lock:
+            last_succ_byte = 0
+            waiting_for_byte = 0
+            file = None
+            file_name = "default.txt"
+            file_size = 0
+            allow_initial = True
+            buffer = []
+
     def __check_send_ACK__(self):
         global allow_initial, buffer
         coming_seq_number = int(self._headers[-1])
@@ -105,7 +116,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._send(waiting_for_byte)
         # print waiting_for_byte, file_size
         if waiting_for_byte == file_size:
-            exit(1)
+            self._finish()
 
 
 class ThreadingUDPServer(SS.ThreadingMixIn, SS.UDPServer):
