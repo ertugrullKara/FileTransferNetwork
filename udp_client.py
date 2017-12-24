@@ -119,7 +119,7 @@ class RDT_UDPClient:
 
 
 if __name__ == "__main__":
-    client = RDT_UDPClient(max_packet_size=4)
+    client = RDT_UDPClient(max_packet_size=900)
     start = time.time()
     client.send_file(sys.argv[1])
     end = time.time()
