@@ -30,8 +30,13 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         last_succ_byte += bytes
         waiting_for_byte = last_succ_byte
 
+    def _write_message(self, msg, msg_bytes):
+        global file
+        file.write(msg)
+        self.__received_bytes__(msg_bytes)
+
     def __check_send_ACK__(self):
-        global file, allow_initial, buffer
+        global allow_initial, buffer
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
@@ -44,23 +49,25 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Get properties.
             self._init()
             with _lock:
-                file.write(self._message)
-                self.__received_bytes__(msg_bytes)
+                self._write_message(self._message, msg_bytes)
                 allow_initial = False
+                buffer.sort(key=lambda tup: tup[0])
+                for buffered_item in buffer:
+                    msg_bytes = utf8len(buffered_item[1])
+                    self._write_message(buffered_item[1], msg_bytes)
+                buffer = []
         elif coming_seq_number == waiting_for_byte:
             print "Coming seq:",
             print coming_seq_number, "burada2"
             # Expected package has arrived.
             # Update ACK message to send.
-            self.__received_bytes__(msg_bytes)
             with _lock:
-                file.write(self._message)
+                self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
                 buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
-                    file.write(buffered_item[1])
                     msg_bytes = utf8len(buffered_item[1])
-                    self.__received_bytes__(msg_bytes)
+                    self._write_message(buffered_item[1], msg_bytes)
                 buffer = []
         elif coming_seq_number > waiting_for_byte:
             print "Coming seq:",
