@@ -62,8 +62,8 @@ class RDT_UDPClient:
         try:
             # Send message
             sock.settimeout(rtt)
-            print "Sending:",
-            print seq_to_send
+            # print "Sending:",
+            # print seq_to_send
             message += hashlib.md5(message).digest()  # Checksum
             sent = time.time()
             sock.sendto(message, (dest_ip, dest_port))
@@ -132,8 +132,8 @@ class RDT_UDPClient:
 
     def _check_incoming_ack(self, incoming_ack):
         self.ack_came = incoming_ack
-        print "Incoming ACK:",
-        print self.ack_came
+        # print "Incoming ACK:",
+        # print self.ack_came
         if self.ack_came == self.file_size:
             exit(1)
         elif self.ack_came  == self.seq_to_send:
