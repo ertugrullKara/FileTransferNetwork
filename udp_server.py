@@ -10,8 +10,8 @@ sys.setdefaultencoding('utf8')
 def utf8len(s):
     return len(s.encode('utf8'))
 
-last_succ_byte = 1000000
-waiting_for_byte = 1000000
+last_succ_byte = 0
+waiting_for_byte = 0
 file = None
 file_name = "default.txt"
 file_size = 0
@@ -40,8 +40,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def _finish(self):
         global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte
         with _lock:
-            last_succ_byte = 1000000
-            waiting_for_byte = 1000000
+            last_succ_byte = 0
+            waiting_for_byte = 0
             file = None
             file_name = "default.txt"
             file_size = 0
@@ -58,7 +58,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         except:
             msg_bytes = len(self._message)
 
-        if coming_seq_number == 1000000 and allow_initial:
+        if coming_seq_number == 0 and allow_initial:
             # Initial packet has arrived.
             # Get properties.
             self._init()
@@ -108,7 +108,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def _send(self, seq):
         socket = self.request[1]
         response = str(seq)
-        response = '{:03d}'.format(len(response)) + response
+        response = '{:05d}'.format(len(response)) + response
         checksum = hashlib.md5(response).digest()
         socket.sendto(response + checksum, self.client_address)
 
@@ -117,14 +117,14 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         # Extract request
         self._data = self.request[0]
-        header_len = int(self._data[:3])
-        self._headers = self._data[3:3+header_len].split('_')
+        header_len = int(self._data[:5])
+        self._headers = self._data[5:5+header_len].split('_')
         if waiting_for_byte == file_size and self._headers[-1] == "last":
             self._finish()
             self._send(-1)
             print "\n\n\n"
             return
-        self._message = self._data[3+header_len:-16]
+        self._message = self._data[5+header_len:-16]
         self._checksum = self._data[-16:]
         if hashlib.md5(self._data[:-16]).digest() != self._checksum:
             print "CHECKSUM_ERROR"

@@ -3,6 +3,7 @@ import socket
 import sys
 import time
 from multiprocessing import Process, Queue
+from threading import Lock
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -10,27 +11,29 @@ sys.setdefaultencoding('utf8')
 def utf8len(s):
     return len(s.encode('ascii'))
 
+estimated_rtt = 0.5
+rtt_lock = Lock()
+_rtt_alpha = 0.65
+
 class RDT_UDPClient:
     dest_ip = ["10.10.2.2", "10.10.4.2"]
     dest_ip_index = 0
     dest_port = 8765
     file_to_send = "5mb.txt"
-    seq_to_send = 1000000
-    ack_came = 1000000
+    seq_to_send = 0
+    ack_came = 0
     file = None
     sock = None
 
     def __init__(self, max_packet_size):
-        self.timeout = 0.5
         self._max_packet_size = max_packet_size
         self._headers = "_"
         self._data = ":"
-        self.seq_to_send = 1000000
-        self.ack_came = 1000000
+        self.seq_to_send = 0
+        self.ack_came = 0
         self.file = None
         # Open socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(self.timeout)
 
     def _open_file(self):
         self.file = open(self.file_to_send, 'rb')
@@ -45,35 +48,41 @@ class RDT_UDPClient:
         self._headers += str(self.file_size) + '_'
 
     def _prepare_packet(self):
-        if self.seq_to_send <= 1000000:
+        if self.seq_to_send <= 0:
             self._initial_packet()
         else:
             self._headers = ""
-        sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
-        self._data = self.file_content[self.seq_to_send:self.seq_to_send + sending_size]
+        self._sending_size = min((self.file_size - self.seq_to_send), self._max_packet_size)
+        self._data = self.file_content[self.seq_to_send:self.seq_to_send + self._sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + self._data
-        self.message = '{:03d}'.format(len(self._headers)) + self.message
+        self.message = '{:05d}'.format(len(self._headers)) + self.message
         self.packeted_seq = self.seq_to_send
-        self.seq_to_send += sending_size
+        self.seq_to_send += self._sending_size
 
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
             # Send message
-            print "Sending:",
-            print seq_to_send
+            self.sock.settimeout(estimated_rtt)
+            # print "Sending:",
+            # print seq_to_send
             message += hashlib.md5(message).digest()  # Checksum
+            sent = time.time()
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
+            rcvd = time.time()
+            global estimated_rtt
+            with rtt_lock:
+                estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*1000
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
                 print "CHECKSUM ERROR - ACK"
                 print response
                 return
-            header_len = int(response[:3])
-            queue.put(int(response[3:3+header_len]))
+            header_len = int(response[:5])
+            queue.put(int(response[5:5+header_len]))
         except:  # Timeout
-            pass
+            queue.put("TIMEOUT")
         if last:
             queue.put("END")
 
@@ -81,7 +90,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = 5
+        windowsize = 10     # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
@@ -98,6 +107,8 @@ class RDT_UDPClient:
                     msg = queue.get(timeout=1)
                     if msg == "END":
                         break
+                    elif msg == "TIMEOUT":
+                        self.seq_to_send -= self._sending_size
                     else:
                         self._check_incoming_ack(msg)
                 except:
@@ -107,7 +118,7 @@ class RDT_UDPClient:
         self.message = self._headers + ""
         self.message += str(hashlib.md5(self.message).digest())  # Checksum
 
-        self.message = '{:03d}'.format(len(self._headers)) + self.message
+        self.message = '{:05d}'.format(len(self._headers)) + self.message
         while 1:
             self.dest_ip_index = (self.dest_ip_index + 1) % len(
                 self.dest_ip)  # Alternate between ip's. [Multi-homing]
@@ -117,16 +128,16 @@ class RDT_UDPClient:
                 checksum = response[-16:]
                 if hashlib.md5(response[:-16]).digest() != checksum:
                     return
-                header_len = int(response[:3])
-                if int(response[3:3 + header_len]) == -1:
+                header_len = int(response[:5])
+                if int(response[5:5 + header_len]) == -1:
                     break
             except:
                 pass
 
     def _check_incoming_ack(self, incoming_ack):
         self.ack_came = incoming_ack
-        print "Incoming ACK:",
-        print self.ack_came
+        # print "Incoming ACK:",
+        # print self.ack_came
         if self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:
@@ -136,7 +147,7 @@ class RDT_UDPClient:
 
 
 if __name__ == "__main__":
-    client = RDT_UDPClient(max_packet_size=9)
+    client = RDT_UDPClient(max_packet_size=900)
     start = time.time()
     client.send_file(sys.argv[1])
     end = time.time()
