@@ -62,6 +62,7 @@ class RDT_UDPClient:
 
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, last):
         try:
+            global estimated_rtt
             # Send message
             self.sock.settimeout(estimated_rtt)
             # print "Sending:",
@@ -71,7 +72,6 @@ class RDT_UDPClient:
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
             rcvd = time.time()
-            global estimated_rtt
             with rtt_lock:
                 estimated_rtt = estimated_rtt * _rtt_alpha + (1.0 - _rtt_alpha) * (rcvd - sent)*1000
             checksum = response[-16:]

@@ -51,8 +51,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def __check_send_ACK__(self):
         global allow_initial, buffer
         coming_seq_number = int(self._headers[-1])
-        print "Coming seq:",
-        print coming_seq_number
+        # print "Coming seq:",
+        # print coming_seq_number
         try:
             msg_bytes = utf8len(self._message)
         except:
