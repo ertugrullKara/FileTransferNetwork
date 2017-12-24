@@ -14,7 +14,7 @@ class SCTPHandler:
     # SCTP Client class to send file
     def __init__(self, filename):
         # Initialisations
-        self.dest_ip_exp1 = (("10.10.4.2", 8765))
+        self.dest_ip_exp1 = (("10.10.4.2", 8765),)
         self.dest_ip_exp2 = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
         self.dest_ip_port_tuples = self.dest_ip_exp1
         self.filename = filename
