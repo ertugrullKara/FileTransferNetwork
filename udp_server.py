@@ -38,6 +38,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         msg_bytes = utf8len(self._message)
 
         if coming_seq_number == 0 and allow_initial:
+            print "Coming seq:",
+            print coming_seq_number, "burada"
             # Initial packet has arrived.
             # Get properties.
             self._init()
@@ -46,6 +48,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 self.__received_bytes__(msg_bytes)
                 allow_initial = False
         elif coming_seq_number == waiting_for_byte:
+            print "Coming seq:",
+            print coming_seq_number, "burada2"
             # Expected package has arrived.
             # Update ACK message to send.
             self.__received_bytes__(msg_bytes)
@@ -59,11 +63,15 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                     self.__received_bytes__(msg_bytes)
                 buffer = []
         elif coming_seq_number > waiting_for_byte:
+            print "Coming seq:",
+            print coming_seq_number, "burada3"
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
             with _lock:
                 buffer.append((coming_seq_number, self._message))
         elif coming_seq_number < waiting_for_byte:
+            print "Coming seq:",
+            print coming_seq_number, "burada4"
             # Already arrived packet came again.
             # Just send the same ACK.
             pass
