@@ -108,8 +108,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
     def _send(self, seq):
         socket = self.request[1]
         response = str(seq)
+        response = '{:03d}'.format(len(response)) + response
         checksum = hashlib.md5(response).digest()
-        socket.sendto('{:03d}'.format(len(response)) + response + checksum, self.client_address)
+        socket.sendto(response + checksum, self.client_address)
 
     def handle(self):
         # Function to run when new UDP request came to the server.

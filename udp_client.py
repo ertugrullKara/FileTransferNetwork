@@ -102,7 +102,7 @@ class RDT_UDPClient:
                         self._check_incoming_ack(msg)
                 except:
                     print "Queue timeout."
-                    pass    # No packet came back.
+                    break
         self._headers = "last"
         self.message = self._headers + ""
         self.message += str(hashlib.md5(self.message).digest())  # Checksum
