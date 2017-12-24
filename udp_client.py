@@ -3,7 +3,7 @@ import socket
 import sys
 import time
 from multiprocessing import Process, Queue
-from threading import Lock
+from threading import Lock, Thread
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -90,7 +90,7 @@ class RDT_UDPClient:
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
-                send_packet = Process(target=self._send_packet, args=(queue, self.packeted_seq,
+                send_packet = Thread(target=self._send_packet, args=(queue, self.packeted_seq,
                                                                       self.message, self.sock,
                                                                       self.dest_ip[self.dest_ip_index],
                                                                       self.dest_port, self.estimated_rtt, i==(windowsize-1)))
