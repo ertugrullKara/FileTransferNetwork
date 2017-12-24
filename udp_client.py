@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 from multiprocessing import Process, Queue
+import sys
 
 def utf8len(s):
     return len(s.encode('utf-8'))

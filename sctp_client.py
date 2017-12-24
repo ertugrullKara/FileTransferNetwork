@@ -1,4 +1,5 @@
 import socket
+import sys
 import sctp
 import time
 
@@ -31,7 +32,7 @@ class SCTPHandler:
 
 
 if __name__ == "__main__":
-    sctp_client = SCTPHandler("5mb.txt")
+    sctp_client = SCTPHandler(sys.argv[1])
     start = time.time()
     sctp_client.send()
     end = time.time()
