@@ -12,6 +12,7 @@ def utf8len(s):
     return len(s.encode('ascii'))
 
 class RDT_UDPClient:
+    # RDTUDP Client class
     dest_ip_exp1 = ["10.10.4.2"]
     dest_ip_exp2 = ["10.10.2.2", "10.10.4.2"]
     dest_ip = dest_ip_exp1
@@ -24,6 +25,7 @@ class RDT_UDPClient:
     sock = None
 
     def __init__(self, max_packet_size):
+        # Initialisations
         self._max_packet_size = max_packet_size
         self._headers = "_"
         self._data = ":"
@@ -36,19 +38,26 @@ class RDT_UDPClient:
         self._rtt_alpha = 0.65
 
     def _open_file(self):
+        # Open file and read the content
         self.file = open(self.file_to_send, 'rb')
         self.file_content = self.file.read()
         try:
+            # If file is of type string
             self.file_size = utf8len(self.file_content)
         except:
+            # If file is of type byte
             self.file_size = len(self.file_content)
 
     def _initial_packet(self):
+        # Set headers for initial packet. To avoid unnecessary overhead of header,
+        # filename and total file size are only send once in the initial packet.
         self._headers = self.file_to_send + '_'
         self._headers += str(self.file_size) + '_'
 
     def _prepare_packet(self):
+        # Prepare a packet to send to server side.
         if self.seq_to_send <= 0:
+            # If it is the first packet.
             self._initial_packet()
         else:
             self._headers = ""
@@ -56,41 +65,52 @@ class RDT_UDPClient:
         self._data = self.file_content[self.seq_to_send:self.seq_to_send + self._sending_size]
         self._headers += str(self.seq_to_send)
         self.message = self._headers + self._data
+        # Put header size in the first 5 bytes of the message for easy extraction.
         self.message = '{:05d}'.format(len(self._headers)) + self.message
+        # Store current seq number and increase it to send next packet in the next call.
         self.packeted_seq = self.seq_to_send
         self.seq_to_send += self._sending_size
 
     def _send_packet(self, queue, seq_to_send, message, sock, dest_ip, dest_port, rtt, last):
+        # Worker function to send a packet through a sock to destination.
         try:
+            # rtt is estimated-rtt implementation. Constantly evolves to fit the network conditions.
             # Send message
             sock.settimeout(rtt)
             # print "Sending:",
             # print seq_to_send
-            message += hashlib.md5(message).digest()  # Checksum
+            message += hashlib.md5(message).digest()  # Checksum in the last 16 bytes of the message
             sent = time.time()
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
             rcvd = time.time()
             rtt = rtt * self._rtt_alpha + (1.0 - self._rtt_alpha) * (rcvd - sent)*100
+            # Check incoming ACK message's checksum
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
                 print "CHECKSUM ERROR - ACK"
                 print response
                 return
+            # Extract the header of ACK message. Only header in ACK messages are ACK numbers.
             header_len = int(response[:5])
             queue.put((int(response[5:5+header_len]), rtt))
         except:  # Timeout
             queue.put(("TIMEOUT", rtt + 0.5))
         if last:
             queue.put(("END", rtt))
+        # Fill the queue with either ACK number, or TIMEOUT or END message.
+        # Also put new estimated-rtt value to queue to update the timeout.
 
     def send_file(self, file_name="input.txt"):
+        # Function to send a whole file
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
+        # Since an architecture like go-back-n is used, increasing windowsize too much decreases the performance.
         windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
+                # Pipelining. Prepare and send packet to a thread.
                 self._prepare_packet()
                 send_packet = Thread(target=self._send_packet, args=(queue, self.packeted_seq,
                                                                       self.message, self.sock,
@@ -98,9 +118,11 @@ class RDT_UDPClient:
                                                                       self.dest_port, self.estimated_rtt, i==(windowsize-1)))
                 send_packet.daemon = True
                 send_packet.start()
+                # Alternate between ip's. [Multi-homing]
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
-                    self.dest_ip)  # Alternate between ip's. [Multi-homing]
+                    self.dest_ip)
             while True:
+                # Check thread's outputs
                 try:
                     msg, new_rtt = queue.get(timeout=1)
                     self.estimated_rtt = new_rtt
@@ -113,6 +135,7 @@ class RDT_UDPClient:
                 except:
                     print "Queue timeout."
                     break
+        # When all file is sent, send finish signal. This message is also checksum protected.
         self._headers = "last"
         self.message = self._headers + ""
         self.message = '{:05d}'.format(len(self._headers)) + self.message
@@ -133,6 +156,8 @@ class RDT_UDPClient:
                 pass
 
     def _check_incoming_ack(self, incoming_ack):
+        # Check incoming ack and decide on the next packet to send. Or exit the program since
+        # the server received the whole file.
         self.ack_came = incoming_ack
         # print "Incoming ACK:",
         # print self.ack_came
