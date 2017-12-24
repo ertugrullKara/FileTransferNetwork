@@ -86,7 +86,7 @@ class RDT_UDPClient:
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
-        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 500)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 100)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 self._prepare_packet()
@@ -98,15 +98,6 @@ class RDT_UDPClient:
                 send_packet.start()
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)  # Alternate between ip's. [Multi-homing]
-                try:
-                    msg, new_rtt = queue.get_nowait()
-                    self.estimated_rtt = new_rtt
-                    if msg == "TIMEOUT":
-                        self.seq_to_send -= self._sending_size
-                    else:
-                        self._check_incoming_ack(msg)
-                except: # No item in queue yet
-                    pass
             while True:
                 try:
                     msg, new_rtt = queue.get(timeout=1)
