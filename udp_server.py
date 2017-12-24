@@ -115,6 +115,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
         # Extract request
         self._data = self.request[0]
+        print self._data
         self._headers = self._data.split(':')[0].split('_')
         if waiting_for_byte == file_size and self._headers[-1] == "last":
             self._finish()
