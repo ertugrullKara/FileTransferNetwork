@@ -4,10 +4,10 @@ import time
 import sys
 
 reload(sys)
-sys.setdefaultencoding('latin1')
+sys.setdefaultencoding('utf8')
 
 def utf8len(s):
-    return len(s.encode('latin1'))
+    return len(s.encode('utf8'))
 
 last_succ_byte = 0
 waiting_for_byte = 0

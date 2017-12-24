@@ -4,11 +4,11 @@ import time
 from multiprocessing import Process, Queue
 import sys
 
-def utf8len(s):
-    return len(s.encode('latin1'))
-
 reload(sys)
-sys.setdefaultencoding('latin1')
+sys.setdefaultencoding('utf8')
+
+def utf8len(s):
+    return len(s.encode('utf8'))
 
 class RDT_UDPClient:
     dest_ip = ["10.10.2.2", "10.10.4.2"]
@@ -69,7 +69,7 @@ class RDT_UDPClient:
         if last:
             queue.put("END")
 
-    def send_file(self, file_name="5mb.txt"):
+    def send_file(self, file_name="input.txt"):
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()

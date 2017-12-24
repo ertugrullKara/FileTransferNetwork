@@ -3,7 +3,7 @@ import sctp
 import sys
 
 reload(sys)
-sys.setdefaultencoding('latin1')
+sys.setdefaultencoding('utf8')
 
 class SCTPHandler:
     def __init__(self):
