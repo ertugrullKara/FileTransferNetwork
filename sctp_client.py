@@ -12,7 +12,9 @@ def utf8len(s):
 
 class SCTPHandler:
     def __init__(self, filename):
-        self.dest_ip_port_tuples = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
+        self.dest_ip_exp1 = (("10.10.4.2", 8765))
+        self.dest_ip_exp2 = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
+        self.dest_ip_port_tuples = self.dest_ip_exp1
         self.filename = filename
         self.file = open(self.filename, 'rb')
         self.file_content = self.file.read()
@@ -24,7 +26,7 @@ class SCTPHandler:
 
     def send(self):
         sock = sctp.sctpsocket_tcp(socket.AF_INET)
-        try:    # IF Multihoming supported SCTP is installed
+        try:    # IF Multihoming supported version of SCTP is installed
             sock.connectx(self.dest_ip_port_tuples)
         except: # Except, run without multihoming
             sock.connect(self.dest_ip_port_tuples[0])

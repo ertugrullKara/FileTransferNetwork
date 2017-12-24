@@ -12,7 +12,9 @@ def utf8len(s):
     return len(s.encode('ascii'))
 
 class RDT_UDPClient:
-    dest_ip = ["10.10.2.2", "10.10.4.2"]
+    dest_ip_exp1 = ["10.10.4.2"]
+    dest_ip_exp2 = ["10.10.2.2", "10.10.4.2"]
+    dest_ip = dest_ip_exp1
     dest_ip_index = 0
     dest_port = 8765
     file_to_send = "5mb.txt"

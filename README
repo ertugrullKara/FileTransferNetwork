@@ -4,10 +4,22 @@ cd pysctp
 make installdeps
 python setup.py install
 
+e2099125@r1:~$ sudo route add -host 10.10.2.2 gw 10.10.2.1
+e2099125@r1:~$ sudo route add -host 10.10.1.1 gw 10.10.1.2
+
+e2099125@r2:~$ sudo route add -host 10.10.4.2 gw 10.10.4.1
+e2099125@r2:~$ sudo route add -host 10.10.3.1 gw 10.10.3.2
 
 e2099125@s:~$ sudo route add -host 10.10.2.2 gw 10.10.1.2
 e2099125@s:~$ sudo route add -host 10.10.4.2 gw 10.10.3.2
 
 e2099125@d:~$ sudo route add -host 10.10.3.1 gw 10.10.4.1
 e2099125@d:~$ sudo route add -host 10.10.1.1 gw 10.10.2.1
+
+
+CHART1 - EXP1       Only r2
+
+
+
+CHART1 - EXP2       r2 and r1
 
