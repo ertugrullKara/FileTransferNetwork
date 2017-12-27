@@ -106,10 +106,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                     if buffered_item[0] > waiting_for_byte or buffered_item[0] in processed_seqs:
                         continue
                     try:
-                        msg_bytes = utf8len(buffered_item[1])
+                        buffmsg_bytes = utf8len(buffered_item[1])
                     except:
-                        msg_bytes = len(buffered_item[1])
-                    self.__received_bytes__(msg_bytes)
+                        buffmsg_bytes = len(buffered_item[1])
+                    self.__received_bytes__(buffmsg_bytes)
                 # buffer = []
                 if coming_seq_number not in processed_seqs:
                     self.__received_bytes__(msg_bytes)
