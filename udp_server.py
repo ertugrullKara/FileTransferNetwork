@@ -59,8 +59,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Checks incoming ACK message and determines the next action
         global allow_initial, buffer
         coming_seq_number = int(self._headers[-1])
-        # print "Coming seq:",
-        # print coming_seq_number
+        print "Coming seq:",
+        print coming_seq_number
         try:
             # If file is of type string
             msg_bytes = utf8len(self._message)
@@ -115,8 +115,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             raise NotImplementedError
 
         # Send new ACK.
-        # print "Sending ACK:",
-        # print waiting_for_byte
+        print "Sending ACK:",
+        print waiting_for_byte
 
     def _send(self, seq):
         # Send packet
@@ -139,6 +139,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Last ACK received.
             if waiting_for_byte == file_size:
                 self._finish()
+                self._send(-1)
+                self._send(-1)
+                self._send(-1)
+                self._send(-1)
                 self._send(-1)
             else:
                 # But not expecting last ACK.
