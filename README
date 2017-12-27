@@ -17,17 +17,7 @@ e2099125@s:~$ sudo route add -host 10.10.4.2 gw 10.10.3.2
 e2099125@d:~$ sudo route add -host 10.10.3.1 gw 10.10.4.1
 e2099125@d:~$ sudo route add -host 10.10.1.1 gw 10.10.2.1
 
-
-CHART1
-sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-
-sudo tc qdisc change dev eth1 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-sudo tc qdisc change dev eth2 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-
-sudo tc qdisc change dev eth1 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-sudo tc qdisc change dev eth2 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
-
+EXPERIMENTS
 e2099125@s:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 e2099125@s:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 
@@ -40,6 +30,17 @@ e2099125@r1:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplic
 e2099125@r2:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 e2099125@r2:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 
+
+CHART1
+sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
 CHART1 - EXP1       Only r2
 udp_client.py icindeki ip listesini degistir.
 python udp_client.py input.txt
@@ -48,3 +49,25 @@ python udp_client.py input.txt
 CHART1 - EXP2       r2 and r1
 udp_client.py icindeki ip listesini degistir.
 python udp_client.py input.txt
+
+
+CHART2
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 0.1% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 0.1% duplicate 0% delay 3ms reorder 0% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 5% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 5% duplicate 0% delay 3ms reorder 0% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 20% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 20% duplicate 0% delay 3ms reorder 0% 50%
+
+
+CHART3
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 5% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 5% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 20% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 20% 50%
+
+sudo tc qdisc change dev eth1 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 35% 50%
+sudo tc qdisc change dev eth2 root netem loss 0% corrupt 0% duplicate 0% delay 3ms reorder 35% 50%
