@@ -17,6 +17,22 @@ e2099125@d:~$ sudo route add -host 10.10.3.1 gw 10.10.4.1
 e2099125@d:~$ sudo route add -host 10.10.1.1 gw 10.10.2.1
 
 
+CHART1
+sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+e2099125@s:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+e2099125@s:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+e2099125@d:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+e2099125@d:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+e2099125@r1:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+e2099125@r1:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
+e2099125@r2:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+e2099125@r2:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
 CHART1 - EXP1       Only r2
 
 

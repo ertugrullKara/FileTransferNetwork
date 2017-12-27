@@ -17,6 +17,7 @@ class SCTPHandler:
         self.dest_ip_exp1 = (("10.10.4.2", 8765),)
         self.dest_ip_exp2 = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
         self.dest_ip_port_tuples = self.dest_ip_exp1
+        self.dest_ip_index = 0
         self.filename = filename
         self.file = open(self.filename, 'rb')
         self.file_content = self.file.read()
@@ -35,8 +36,7 @@ class SCTPHandler:
             sock.connectx(self.dest_ip_port_tuples)
             print "Multihoming."
         except: # Except, run without multihoming
-            for ip_port_tuple in self.dest_ip_port_tuples:
-                sock.connect(ip_port_tuple)
+            sock.connect(self.dest_ip_port_tuples[self.dest_ip_index])
         # Send initial info like filename etc
         initial_info = self.filename + ':' + str(self.buffer_size) + ":" + str(self.file_size)
         sock.send(initial_info)
@@ -44,7 +44,12 @@ class SCTPHandler:
         while 1:
             # Pack next bytes < 1000 and send
             next_pack = min(self.buffer_size, self.file_size - read_bytes)
-            sock.send(self.file_content[read_bytes:read_bytes + next_pack])
+            try:
+                sock.send(self.file_content[read_bytes:read_bytes + next_pack])
+            except:
+                for ip_port_tuple in self.dest_ip_port_tuples:
+                    self.dest_ip_index = (self.dest_ip_index + 1) % len(self.dest_ip_port_tuples)
+                    sock.connect(self.dest_ip_port_tuples[self.dest_ip_index])
             read_bytes += next_pack
             if read_bytes == self.file_size:
                 break
