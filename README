@@ -1,8 +1,9 @@
 installing pysctp:
 ----
 cd pysctp
+sudo apt-get update
 make installdeps
-python setup.py install
+sudo python setup.py install
 
 e2099125@r1:~$ sudo route add -host 10.10.2.2 gw 10.10.2.1
 e2099125@r1:~$ sudo route add -host 10.10.1.1 gw 10.10.1.2
@@ -24,6 +25,9 @@ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3m
 sudo tc qdisc change dev eth1 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 sudo tc qdisc change dev eth2 root netem loss 5% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 
+sudo tc qdisc change dev eth1 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+sudo tc qdisc change dev eth2 root netem loss 10% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
+
 e2099125@s:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 e2099125@s:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 
@@ -37,8 +41,10 @@ e2099125@r2:~$ sudo tc qdisc add dev eth1 root netem loss 0.1% corrupt 0% duplic
 e2099125@r2:~$ sudo tc qdisc add dev eth2 root netem loss 0.1% corrupt 0% duplicate 0% delay 3ms reorder 0% 50%
 
 CHART1 - EXP1       Only r2
-
+udp_client.py icindeki ip listesini degistir.
+python udp_client.py input.txt
 
 
 CHART1 - EXP2       r2 and r1
-
+udp_client.py icindeki ip listesini degistir.
+python udp_client.py input.txt
