@@ -140,10 +140,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             if waiting_for_byte == file_size:
                 self._finish()
                 self._send(-1)
-                self._send(-1)
-                self._send(-1)
-                self._send(-1)
-                self._send(-1)
             else:
                 # But not expecting last ACK.
                 self._send(waiting_for_byte)
