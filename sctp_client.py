@@ -12,11 +12,14 @@ def utf8len(s):
 
 class SCTPHandler:
     # SCTP Client class to send file
-    def __init__(self, filename):
+    def __init__(self, filename, exp):
         # Initialisations
         self.dest_ip_exp1 = (("10.10.4.2", 8765),)
         self.dest_ip_exp2 = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
-        self.dest_ip_port_tuples = self.dest_ip_exp1
+        if exp == 1:
+            self.dest_ip_port_tuples = self.dest_ip_exp1
+        elif exp == 2:
+            self.dest_ip_port_tuples = self.dest_ip_exp2
         self.dest_ip_index = 0
         self.filename = filename
         self.file = open(self.filename, 'rb')
@@ -56,7 +59,7 @@ class SCTPHandler:
 
 
 if __name__ == "__main__":
-    sctp_client = SCTPHandler(sys.argv[1])
+    sctp_client = SCTPHandler(sys.argv[1], sys.argv[2])
     start = time.time()
     sctp_client.send()
     end = time.time()

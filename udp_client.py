@@ -104,8 +104,12 @@ class RDT_UDPClient:
         # Fill the queue with either ACK number, or TIMEOUT or END message.
         # Also put new estimated-rtt value to queue to update the timeout.
 
-    def send_file(self, file_name="input.txt"):
+    def send_file(self, file_name="input.txt", exp=1):
         # Function to send a whole file
+        if exp == 1:
+            self.dest_ip = self.dest_ip_exp1
+        elif exp == 2:
+            self.dest_ip = self.dest_ip_exp2
         self.file_to_send = file_name
         self._open_file()
         queue = Queue()
@@ -187,6 +191,6 @@ class RDT_UDPClient:
 if __name__ == "__main__":
     client = RDT_UDPClient(max_packet_size=960)
     start = time.time()
-    client.send_file(sys.argv[1])
+    client.send_file(sys.argv[1], sys.argv[2])
     end = time.time()
     print "Elapsed time:", end-start
