@@ -147,6 +147,7 @@ class RDT_UDPClient:
             self.dest_ip_index = (self.dest_ip_index + 1) % len(
                 self.dest_ip)  # Alternate between ip's. [Multi-homing]
             try:
+                self.sock.settimeout(self.estimated_rtt)
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 response = self.sock.recv(1024)
                 checksum = response[-16:]
