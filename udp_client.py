@@ -110,7 +110,7 @@ class RDT_UDPClient:
         self._open_file()
         queue = Queue()
         # Since an architecture like go-back-n is used, increasing windowsize too much decreases the performance.
-        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 50)    # Set window size. It can be any arbitrary number.
+        windowsize = min(int(( self.file_size / 1000 ) / 3.0), 25)    # Set window size. It can be any arbitrary number.
         while self.ack_came < self.file_size:
             for i in range(windowsize):
                 # Pipelining. Prepare and send packet to a thread.
