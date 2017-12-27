@@ -51,8 +51,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _finish(self):
         # If received last ack, set everything to default value to allow another incoming file.
-        global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte, processed_seqs
+        global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte, processed_seqs,\
+            allow_final
         with _lock:
+            allow_final = False
             buffer.sort(key=lambda tup: tup[0])
             for buffered_item in buffer:
                 self._write_message(buffered_item[1], None)
@@ -150,7 +152,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def handle(self):
         # Function to run when new UDP request came to the server.
-        global allow_final
+
         # Extract request
         self._data = self.request[0]
         # Extract header length from first 5 bytes
@@ -159,7 +161,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         if self._headers[-1] == "last":
             # Last ACK received.
             if waiting_for_byte == file_size and allow_final:
-                allow_final = False
                 self._finish()
                 self._send(-1)
             else:
