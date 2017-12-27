@@ -18,6 +18,7 @@ file_name = "default.txt"
 file_size = 0
 allow_initial = True
 buffer = []
+ahead_buffer = []
 processed_seqs = []
 # Lock to use the globals from threads
 _lock = threading.Lock()
@@ -65,7 +66,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __check_send_ACK__(self):
         # Checks incoming ACK message and determines the next action
-        global allow_initial, buffer, processed_seqs
+        global allow_initial, buffer, processed_seqs, ahead_buffer
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
@@ -102,7 +103,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
                 # buffer.sort(key=lambda tup: tup[0])
-                for buffered_item in buffer:
+                for buffered_item in ahead_buffer:
                     if buffered_item[0] > waiting_for_byte or buffered_item[0] in processed_seqs:
                         continue
                     try:
@@ -111,7 +112,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                         buffmsg_bytes = len(buffered_item[1])
                     self.__received_bytes__(buffmsg_bytes)
                     processed_seqs.append(buffered_item[0])
-                # buffer = []
+                ahead_buffer = []
                 if coming_seq_number not in processed_seqs:
                     self.__received_bytes__(msg_bytes)
                     processed_seqs.append(coming_seq_number)
@@ -122,7 +123,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             with _lock:
                 if coming_seq_number not in processed_seqs:
                     # processed_seqs.append(coming_seq_number)
-                    buffer.append((coming_seq_number, self._message))
+                    ahead_buffer.append((coming_seq_number, self._message))
         elif coming_seq_number < waiting_for_byte:
             # Already arrived packet came again.
             # Just send the same ACK.
