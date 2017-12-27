@@ -17,6 +17,7 @@ file = None
 file_name = "default.txt"
 file_size = 0
 allow_initial = True
+allow_final = False
 buffer = []
 ahead_buffer = []
 processed_seqs = []
@@ -66,7 +67,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __check_send_ACK__(self):
         # Checks incoming ACK message and determines the next action
-        global allow_initial, buffer, processed_seqs, ahead_buffer
+        global allow_initial, allow_final, buffer, processed_seqs, ahead_buffer
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
@@ -84,6 +85,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             with _lock:
                 # self._write_message(self._message, msg_bytes)
                 allow_initial = False
+                allow_final = True
                 # buffer.sort(key=lambda tup: tup[0])
                 # for buffered_item in buffer:
                 #     try:
@@ -148,7 +150,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def handle(self):
         # Function to run when new UDP request came to the server.
-
+        global allow_final
         # Extract request
         self._data = self.request[0]
         # Extract header length from first 5 bytes
@@ -156,7 +158,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._headers = self._data[5:5+header_len].split('_')
         if self._headers[-1] == "last":
             # Last ACK received.
-            if waiting_for_byte == file_size:
+            if waiting_for_byte == file_size and allow_final:
+                allow_final = False
                 self._finish()
                 self._send(-1)
             else:
