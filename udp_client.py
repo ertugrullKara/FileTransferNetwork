@@ -31,6 +31,8 @@ class RDT_UDPClient:
         self._data = ":"
         self.seq_to_send = 0
         self.ack_came = 0
+        self.prev_ack_came = 0
+        self.prev_prev_ack_came = 0
         self.file = None
         # Open socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -166,8 +168,17 @@ class RDT_UDPClient:
         elif self.ack_came  == self.seq_to_send:
             pass #Basarili
         else:
-            # Bigger or lower ack
-            self.seq_to_send = self.ack_came
+            if self.ack_came == self.prev_ack_came:
+                if self.ack_came == self.prev_prev_ack_came:
+                    # Bigger or lower ack
+                    self.seq_to_send = self.ack_came
+                else:
+                    self.prev_prev_ack_came = self.prev_ack_came
+                    self.prev_ack_came = self.ack_came
+            else:
+                self.prev_ack_came = 0
+                self.prev_prev_ack_came = 0
+        self.prev_ack_came = self.ack_came
 
 
 
