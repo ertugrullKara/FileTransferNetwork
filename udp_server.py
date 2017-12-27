@@ -64,7 +64,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def __check_send_ACK__(self):
         # Checks incoming ACK message and determines the next action
-        global allow_initial, buffer
+        global allow_initial, buffer, processed_seqs
         coming_seq_number = int(self._headers[-1])
         print "Coming seq:",
         print coming_seq_number
@@ -82,7 +82,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             with _lock:
                 # self._write_message(self._message, msg_bytes)
                 allow_initial = False
-                self.__received_bytes__(msg_bytes)
                 # buffer.sort(key=lambda tup: tup[0])
                 # for buffered_item in buffer:
                 #     try:
@@ -92,6 +91,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 #     self._write_message(buffered_item[1], msg_bytes)
                 # buffer = []
                 if coming_seq_number not in processed_seqs:
+                    self.__received_bytes__(msg_bytes)
                     processed_seqs.append(coming_seq_number)
                     buffer.append((coming_seq_number, self._message))
         elif coming_seq_number == waiting_for_byte:
@@ -100,7 +100,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             with _lock:
                 # self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
-                self.__received_bytes__(msg_bytes)
                 # buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
                     if buffered_item[0] > waiting_for_byte and buffered_item[0] in processed_seqs:
@@ -112,6 +111,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                     self.__received_bytes__(msg_bytes)
                 # buffer = []
                 if coming_seq_number not in processed_seqs:
+                    self.__received_bytes__(msg_bytes)
                     processed_seqs.append(coming_seq_number)
                     buffer.append((coming_seq_number, self._message))
         elif coming_seq_number > waiting_for_byte:
