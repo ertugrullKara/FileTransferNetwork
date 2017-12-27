@@ -41,12 +41,18 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Write incoming message to file
         global file
         file.write(msg)
-        self.__received_bytes__(msg_bytes)
+        # self.__received_bytes__(msg_bytes)
+
+    def _save_message(self, msg, seq_num, msg_bytes):
+        pass
 
     def _finish(self):
         # If received last ack, set everything to default value to allow another incoming file.
         global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte
         with _lock:
+            buffer.sort(key=lambda tup: tup[0])
+            for buffered_item in buffer:
+                self._write_message(buffered_item[1], None)
             last_succ_byte = 0
             waiting_for_byte = 0
             file = None
@@ -73,33 +79,36 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # Get properties.
             self._init()
             with _lock:
-                self._write_message(self._message, msg_bytes)
+                # self._write_message(self._message, msg_bytes)
                 allow_initial = False
-                buffer.sort(key=lambda tup: tup[0])
-                for buffered_item in buffer:
-                    try:
-                        msg_bytes = utf8len(buffered_item[1])
-                    except:
-                        msg_bytes = len(buffered_item[1])
-                    self._write_message(buffered_item[1], msg_bytes)
-                buffer = []
+                self.__received_bytes__(msg_bytes)
+                # buffer.sort(key=lambda tup: tup[0])
+                # for buffered_item in buffer:
+                #     try:
+                #         msg_bytes = utf8len(buffered_item[1])
+                #     except:
+                #         msg_bytes = len(buffered_item[1])
+                #     self._write_message(buffered_item[1], msg_bytes)
+                # buffer = []
+                buffer.append((coming_seq_number, self._message))
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
             with _lock:
-                self._write_message(self._message, msg_bytes)
+                # self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
+                self.__received_bytes__(msg_bytes)
                 buffer.sort(key=lambda tup: tup[0])
-                current_last_byte = last_succ_byte
                 for buffered_item in buffer:
-                    if buffered_item[0] > current_last_byte:
+                    if buffered_item[0] > waiting_for_byte:
                         continue
                     try:
                         msg_bytes = utf8len(buffered_item[1])
                     except:
                         msg_bytes = len(buffered_item[1])
-                    self._write_message(buffered_item[1], msg_bytes)
-                buffer = []
+                    self.__received_bytes__(msg_bytes)
+                # buffer = []
+                buffer.append((coming_seq_number, self._message))
         elif coming_seq_number > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
