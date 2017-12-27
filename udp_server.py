@@ -18,6 +18,7 @@ file_name = "default.txt"
 file_size = 0
 allow_initial = True
 buffer = []
+processed_seqs = []
 # Lock to use the globals from threads
 _lock = threading.Lock()
 
@@ -90,7 +91,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 #         msg_bytes = len(buffered_item[1])
                 #     self._write_message(buffered_item[1], msg_bytes)
                 # buffer = []
-                buffer.append((coming_seq_number, self._message))
+                if coming_seq_number not in processed_seqs:
+                    processed_seqs.append(coming_seq_number)
+                    buffer.append((coming_seq_number, self._message))
         elif coming_seq_number == waiting_for_byte:
             # Expected package has arrived.
             # Update ACK message to send.
@@ -98,9 +101,9 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
                 self.__received_bytes__(msg_bytes)
-                buffer.sort(key=lambda tup: tup[0])
+                # buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
-                    if buffered_item[0] > waiting_for_byte:
+                    if buffered_item[0] > waiting_for_byte and buffered_item[0] in processed_seqs:
                         continue
                     try:
                         msg_bytes = utf8len(buffered_item[1])
@@ -108,12 +111,16 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                         msg_bytes = len(buffered_item[1])
                     self.__received_bytes__(msg_bytes)
                 # buffer = []
-                buffer.append((coming_seq_number, self._message))
+                if coming_seq_number not in processed_seqs:
+                    processed_seqs.append(coming_seq_number)
+                    buffer.append((coming_seq_number, self._message))
         elif coming_seq_number > waiting_for_byte:
             # A packet that is ahead of me has arrived.
             # But save incoming packet to be processed later.
             with _lock:
-                buffer.append((coming_seq_number, self._message))
+                if coming_seq_number not in processed_seqs:
+                    processed_seqs.append(coming_seq_number)
+                    buffer.append((coming_seq_number, self._message))
         elif coming_seq_number < waiting_for_byte:
             # Already arrived packet came again.
             # Just send the same ACK.
