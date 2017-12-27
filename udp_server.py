@@ -90,7 +90,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
                 buffer.sort(key=lambda tup: tup[0])
+                current_last_byte = last_succ_byte
                 for buffered_item in buffer:
+                    if buffered_item[0] > current_last_byte:
+                        continue
                     try:
                         msg_bytes = utf8len(buffered_item[1])
                     except:
