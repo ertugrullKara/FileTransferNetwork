@@ -49,7 +49,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
 
     def _finish(self):
         # If received last ack, set everything to default value to allow another incoming file.
-        global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte
+        global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte, processed_seqs
         with _lock:
             buffer.sort(key=lambda tup: tup[0])
             for buffered_item in buffer:
@@ -61,6 +61,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             file_size = 0
             allow_initial = True
             buffer = []
+            processed_seqs = []
 
     def __check_send_ACK__(self):
         # Checks incoming ACK message and determines the next action
@@ -102,7 +103,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # Write buffered messages to file.
                 # buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in buffer:
-                    if buffered_item[0] > waiting_for_byte and buffered_item[0] in processed_seqs:
+                    if buffered_item[0] > waiting_for_byte or buffered_item[0] in processed_seqs:
                         continue
                     try:
                         msg_bytes = utf8len(buffered_item[1])
