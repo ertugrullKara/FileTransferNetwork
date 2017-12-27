@@ -120,7 +120,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
             # But save incoming packet to be processed later.
             with _lock:
                 if coming_seq_number not in processed_seqs:
-                    processed_seqs.append(coming_seq_number)
+                    # processed_seqs.append(coming_seq_number)
                     buffer.append((coming_seq_number, self._message))
         elif coming_seq_number < waiting_for_byte:
             # Already arrived packet came again.
