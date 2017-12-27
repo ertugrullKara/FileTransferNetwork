@@ -54,6 +54,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         global file, file_name, file_size, allow_initial, buffer, last_succ_byte, waiting_for_byte, processed_seqs,\
             allow_final
         with _lock:
+            if not allow_final:
+                return
             allow_final = False
             buffer.sort(key=lambda tup: tup[0])
             for buffered_item in buffer:
@@ -160,7 +162,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         self._headers = self._data[5:5+header_len].split('_')
         if self._headers[-1] == "last":
             # Last ACK received.
-            if waiting_for_byte == file_size and allow_final:
+            if waiting_for_byte == file_size:
                 self._finish()
                 self._send(-1)
             else:
