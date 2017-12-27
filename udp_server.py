@@ -110,6 +110,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                     except:
                         buffmsg_bytes = len(buffered_item[1])
                     self.__received_bytes__(buffmsg_bytes)
+                    processed_seqs.append(buffered_item[0])
                 # buffer = []
                 if coming_seq_number not in processed_seqs:
                     self.__received_bytes__(msg_bytes)
