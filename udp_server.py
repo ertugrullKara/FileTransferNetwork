@@ -109,7 +109,8 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # self._write_message(self._message, msg_bytes)
                 # Write buffered messages to file.
                 # buffer.sort(key=lambda tup: tup[0])
-                for buffered_item in ahead_buffer:
+                initial_ahead_buffer = ahead_buffer[:]
+                for buffered_item in initial_ahead_buffer:
                     if buffered_item[0] > waiting_for_byte:
                         continue
                     if buffered_item[0] in processed_seqs:
