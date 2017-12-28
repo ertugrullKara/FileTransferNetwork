@@ -16,9 +16,9 @@ class SCTPHandler:
         # Initialisations
         self.dest_ip_exp1 = (("10.10.4.2", 8765),)
         self.dest_ip_exp2 = (("10.10.2.2", 8765), ("10.10.4.2", 8765))
-        if exp == 1:
+        if exp == "1":
             self.dest_ip_port_tuples = self.dest_ip_exp1
-        elif exp == 2:
+        elif exp == "2":
             self.dest_ip_port_tuples = self.dest_ip_exp2
         self.dest_ip_index = 0
         self.filename = filename

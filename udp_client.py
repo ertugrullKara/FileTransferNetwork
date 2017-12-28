@@ -106,9 +106,9 @@ class RDT_UDPClient:
 
     def send_file(self, file_name="input.txt", exp=1):
         # Function to send a whole file
-        if exp == 1:
+        if exp == "1":
             self.dest_ip = self.dest_ip_exp1
-        elif exp == 2:
+        elif exp == "2":
             self.dest_ip = self.dest_ip_exp2
         self.file_to_send = file_name
         self._open_file()
