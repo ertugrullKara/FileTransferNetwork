@@ -104,7 +104,7 @@ class RDT_UDPClient:
         # Fill the queue with either ACK number, or TIMEOUT or END message.
         # Also put new estimated-rtt value to queue to update the timeout.
 
-    def send_file(self, file_name="input.txt", exp=1):
+    def send_file(self, file_name="input.txt", exp="1"):
         # Function to send a whole file
         if exp == "1":
             self.dest_ip = self.dest_ip_exp1
@@ -151,7 +151,7 @@ class RDT_UDPClient:
             self.dest_ip_index = (self.dest_ip_index + 1) % len(
                 self.dest_ip)  # Alternate between ip's. [Multi-homing]
             try:
-                self.sock.settimeout(self.estimated_rtt)
+                self.sock.settimeout(self.estimated_rtt+1)
                 self.sock.sendto(self.message, (self.dest_ip[self.dest_ip_index], self.dest_port))
                 response = self.sock.recv(1024)
                 checksum = response[-16:]

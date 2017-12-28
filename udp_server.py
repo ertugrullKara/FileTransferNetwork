@@ -160,6 +160,14 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
         # Extract header length from first 5 bytes
         header_len = int(self._data[:5])
         self._headers = self._data[5:5+header_len].split('_')
+        # Check incoming message's checksum
+        self._checksum = self._data[-16:]
+        if hashlib.md5(self._data[:-16]).digest() != self._checksum:
+            print "CHECKSUM_ERROR"
+            print "Sending ACK:",
+            print waiting_for_byte
+            self._send(waiting_for_byte)
+            return
         if self._headers[-1] == "last":
             # Last ACK received.
             if waiting_for_byte == file_size:
@@ -170,14 +178,6 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 self._send(waiting_for_byte)
             return
         self._message = self._data[5+header_len:-16]
-        # Check incoming message's checksum
-        self._checksum = self._data[-16:]
-        if hashlib.md5(self._data[:-16]).digest() != self._checksum:
-            print "CHECKSUM_ERROR"
-            print "Sending ACK:",
-            print waiting_for_byte
-            self._send(waiting_for_byte)
-            return
 
         self.__check_send_ACK__()
         self._send(waiting_for_byte)
