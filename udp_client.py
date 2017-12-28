@@ -103,6 +103,7 @@ class RDT_UDPClient:
             queue.put(("END", rtt))
         # Fill the queue with either ACK number, or TIMEOUT or END message.
         # Also put new estimated-rtt value to queue to update the timeout.
+        return
 
     def send_file(self, file_name="input.txt", exp="1"):
         # Function to send a whole file
@@ -128,6 +129,7 @@ class RDT_UDPClient:
                 # Alternate between ip's. [Multi-homing]
                 self.dest_ip_index = (self.dest_ip_index + 1) % len(
                     self.dest_ip)
+            queue.join_thread()
             while True:
                 # Check thread's outputs
                 try:
