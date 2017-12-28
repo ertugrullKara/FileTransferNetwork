@@ -37,6 +37,7 @@ class SCTPHandler:
             if buf > 0:
                 self.file.write(buf)
                 total += len(buf)    # or buf ?
+                print total
                 if total == self.total_size:
                     break
 
