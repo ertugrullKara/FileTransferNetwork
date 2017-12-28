@@ -110,7 +110,10 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                 # Write buffered messages to file.
                 # buffer.sort(key=lambda tup: tup[0])
                 for buffered_item in ahead_buffer:
-                    if buffered_item[0] > waiting_for_byte or buffered_item[0] in processed_seqs:
+                    if buffered_item[0] > waiting_for_byte:
+                        continue
+                    if buffered_item[0] in processed_seqs:
+                        ahead_buffer.remove(buffered_item)
                         continue
                     try:
                         buffmsg_bytes = utf8len(buffered_item[1])
@@ -118,7 +121,7 @@ class RDT_UDPHandler(SS.BaseRequestHandler):
                         buffmsg_bytes = len(buffered_item[1])
                     self.__received_bytes__(buffmsg_bytes)
                     processed_seqs.append(buffered_item[0])
-                ahead_buffer = []
+                    ahead_buffer.remove(buffered_item)
                 if coming_seq_number not in processed_seqs:
                     self.__received_bytes__(msg_bytes)
                     processed_seqs.append(coming_seq_number)

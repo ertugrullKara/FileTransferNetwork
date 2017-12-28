@@ -87,7 +87,7 @@ class RDT_UDPClient:
             sock.sendto(message, (dest_ip, dest_port))
             response = sock.recv(1024)
             rcvd = time.time()
-            rtt = min(rtt * self._rtt_alpha + (1.0 - self._rtt_alpha) * (rcvd - sent)*100, 1)
+            rtt = min(rtt * self._rtt_alpha + (1.0 - self._rtt_alpha) * (rcvd - sent)*100, 0.5)
             # Check incoming ACK message's checksum
             checksum = response[-16:]
             if hashlib.md5(response[:-16]).digest() != checksum:
